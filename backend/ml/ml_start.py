@@ -41,6 +41,12 @@ class MLStart:
             import json
             log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
             os.makedirs(log_dir, exist_ok=True)
+            # 清理超过7天的旧训练日志
+            try:
+                from app.utils.log_cleanup import cleanup_old_logs
+                cleanup_old_logs(log_dir, "training_", keep_days=7)
+            except Exception:
+                pass
             log_file = os.path.join(log_dir, f"training_{datetime.now().strftime('%Y-%m-%d')}.jsonl")
             with open(log_file, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(entry, ensure_ascii=False, default=str) + '\n')

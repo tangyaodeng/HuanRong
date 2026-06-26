@@ -38,6 +38,13 @@ def setup_logging(level: str = "INFO") -> logging.Logger:
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, f"scheduler_{datetime.now().strftime('%Y-%m-%d')}.log")
 
+    # 清理超过7天的旧调度器日志
+    try:
+        from app.utils.log_cleanup import cleanup_old_logs
+        cleanup_old_logs(log_dir, "scheduler_", keep_days=7)
+    except Exception:
+        pass
+
     # 根 logger
     root_logger = logging.getLogger()
     root_logger.setLevel(getattr(logging, level.upper(), logging.INFO))
