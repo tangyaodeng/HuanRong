@@ -806,9 +806,11 @@ class XGBoostPredictor:
             self,
             device_id: int = None,
             target_feature: str = None,
-            look_back: int = None
+            look_back: int = None,
+            force_predict: bool = False
     ) -> Dict:
-        """增强版预测方法 - 包含偏差校正机制"""
+        """增强版预测方法 - 包含偏差校正机制
+        force_predict=True 时跳过开关机检查，强制按开机走完整预测流程（用于白天测试）"""
         try:
             start_time = time.time()
 
@@ -843,8 +845,8 @@ class XGBoostPredictor:
                     'device_id': device_id
                 }
 
-            # 准备预测数据（包含开关机状态检查）
-            prediction_data = self.prepare_prediction_data(device_id, target_feature, look_back)
+            # 准备预测数据（force_predict 时跳过开关机状态检查）
+            prediction_data = self.prepare_prediction_data(device_id, target_feature, look_back, force_predict=force_predict)
             if not prediction_data:
                 logger.warning("⚠️ 无法准备预测数据")
                 result = {
@@ -1959,9 +1961,13 @@ class XGBoostPredictor:
             self,
             device_id: int,
             target_feature: str = None,
-            look_back: int = None
+            look_back: int = None,
+            force_predict: bool = False
     ) -> Optional[Dict]:
-        """准备预测数据 - 确保与训练时特征一致"""
+        """准备预测数据 - 确保与训练时特征一致
+        force_predict=True 时跳过开关机检查，强制按开机走完整预测流程（用于白天测试）"""
+        if force_predict:
+            logger.warning(f"[强制预测] 设备 {device_id} 跳过开关机状态检查，强制按开机预测")
         db_session = None
         try:
 
@@ -1979,8 +1985,11 @@ class XGBoostPredictor:
                 logger.error("无法获取数据库会话")
                 return None
 
-            # 3. 检查设备开关机状态
-            device_status = self._check_device_status(device_id, db_session)
+            # 3. 检查设备开关机状态（force_predict 时跳过）
+            if force_predict:
+                device_status = True  # 强制开机
+            else:
+                device_status = self._check_device_status(device_id, db_session)
             if not device_status:
                 logger.info(f"⚡ 设备 {device_id} 当前为关机状态，跳过预测数据准备")
 
@@ -2637,9 +2646,11 @@ class XGBoostPredictor:
             device_id: int = None,
             target_feature: str = None,
             look_back: int = None,
-            use_correction: bool = True
+            use_correction: bool = True,
+            force_predict: bool = False
     ) -> Dict:
-        """执行单次预测，支持开关机状态检查"""
+        """执行单次预测，支持开关机状态检查
+        force_predict=True 时跳过开关机检查，强制按开机走完整预测流程（用于白天测试）"""
         try:
             look_back = self.active_look_back  # 强制使用模型配置
             logger.info(
@@ -2666,7 +2677,7 @@ class XGBoostPredictor:
                 logger.error("❌ 模型未加载")
                 return {'success': False, 'error': '模型未加载', 'device_id': device_id}
 
-            prediction_data = self.prepare_prediction_data(device_id, target_feature, look_back)
+            prediction_data = self.prepare_prediction_data(device_id, target_feature, look_back, force_predict=force_predict)
             if not prediction_data:
                 logger.warning("⚠️ 无法准备预测数据")
                 return {
