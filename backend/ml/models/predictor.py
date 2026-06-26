@@ -2325,8 +2325,17 @@ class XGBoostPredictor:
             # 16. 准备序列数据
             recent_data = merged_df.iloc[-look_back:].copy()
 
-            # 17. 创建特征列 - 使用保存的特征列
-            if hasattr(self, 'active_feature_columns') and self.active_feature_columns:
+            # 17. 创建特征列 - 优先使用模型训练时的特征列表
+            if hasattr(self, 'feature_names') and self.feature_names:
+                # 只取模型训练时用到的特征（排除目标特征），确保维度匹配
+                feature_columns = [c for c in self.feature_names if c in recent_data.columns and c != target_feature_name]
+                if not feature_columns:
+                    # 兜底：使用全部非目标列
+                    feature_columns = [col for col in recent_data.columns if col != target_feature_name]
+                    logger.warning(f"模型特征列表与实际数据无交集，使用全部 {len(feature_columns)} 个列")
+                else:
+                    logger.info(f"✅ 使用模型训练时的 {len(feature_columns)} 个特征（共加载 {len(recent_data.columns)-1} 个）")
+            elif hasattr(self, 'active_feature_columns') and self.active_feature_columns:
                 feature_columns = self.active_feature_columns
             else:
                 feature_columns = [col for col in recent_data.columns if col != target_feature_name]
