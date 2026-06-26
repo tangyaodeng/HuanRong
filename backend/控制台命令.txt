@@ -1,0 +1,46 @@
+http://localhost:8000/frontend/pages/monitoring.html
+pip show huggingface-hub
+.\venv\Scripts\Activate.ps1
+http://localhost:8000/frontend/pages/monitoring.html
+pip install jieba -i https://pypi.tuna.tsinghua.edu.cn/simple/
+终端1（FastAPI - 不含调度器，调度器已移至终端7）
+cd backend
+python start.py
+终端2
+cd backend/ml/models
+python new_cooling_opt.py
+python cooling_opt.py
+终端3
+cd backend/ml/models
+python new_chilled_opt.py
+python chilled_opt.py
+终端4
+cd backend/ml/data
+python composite_feature_processor.py --mode sync
+python composite_feature_processor.py --mode historical --verbose
+cd backend/ml/utils
+python clean_output_folders.py
+python test_predict_device11.py
+cd  backend/test
+python redis-connect.py
+python test_ollama.py
+python test_ai_query.py
+终端5
+python -m celery -A backend.app.celery_app worker --loglevel=info -P threads
+python -m celery -A backend.app.celery_app  purge -f
+终端6
+cd whisper-local
+python voice_server.py
+# ========== Celery 报错诊断（电脑D无法启动时执行）==========
+python -c "import sys; print(sys.path); from backend.app.celery_app import celery_app; print('OK')"
+
+# ========== 独立调度器（单独终端，独立于FastAPI）==========
+# 终端7: 独立调度器 - 处理所有训练和预测定时任务
+#   注意：终端1的FastAPI已不再管理调度器，全部由本终端处理
+cd backend
+python run_scheduler.py --log-level INFO
+# 日志文件:
+#   backend/logs/scheduler_{日期}.log    -- 调度器运行日志（控制台输出+文件双写）
+#   backend/logs/predictions_{日期}.jsonl -- 每次预测的JSONL记录
+#   backend/logs/training_{日期}.jsonl   -- 每次训练的JSONL记录
+# 排查预测为0时: grep "[状态检查]" backend/logs/scheduler_*.log

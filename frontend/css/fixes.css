@@ -1,0 +1,853 @@
+/* fixes.css - 修复设备管理页面的按钮布局问题 */
+
+/* 修复设备模态框底部按钮布局 */
+#device-modal .modal-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    align-items: center !important;
+    padding: 16px 24px !important;
+    border-top: 1px solid #e0e0e0 !important;
+    background: #f9f9f9 !important;
+}
+
+/* 确保按钮在同一行 */
+#device-modal .modal-footer .btn {
+    min-width: 80px !important;
+    height: 36px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+}
+
+/* 修复批量操作模态框的按钮布局 */
+#batch-modal .modal-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    align-items: center !important;
+    padding: 16px 24px !important;
+    border-top: 1px solid #e0e0e0 !important;
+    background: #f9f9f9 !important;
+}
+
+/* 修复设备表单中保存按钮的显示 */
+#modal-save {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 确保模态框内容区域有足够的padding */
+#device-modal .modal-body {
+    padding: 20px 24px !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+}
+
+/* 修复标签页导航样式 */
+#device-modal .tab-nav {
+    display: flex !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    margin-bottom: 20px !important;
+}
+
+#device-modal .tab-link {
+    padding: 10px 20px !important;
+    background: none !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    color: #666 !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+}
+
+#device-modal .tab-link.active {
+    color: #3498db !important;
+    border-bottom-color: #3498db !important;
+}
+
+#device-modal .tab-link:hover:not(.active) {
+    color: #333 !important;
+}
+
+/* 修复表单组件的间距 */
+#device-modal .form-group {
+    margin-bottom: 16px !important;
+}
+
+#device-modal .form-label {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+}
+
+#device-modal .form-control {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+}
+
+#device-modal .form-control:focus {
+    outline: none !important;
+    border-color: #3498db !important;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2) !important;
+}
+
+#device-modal .form-hint {
+    font-size: 12px !important;
+    color: #666 !important;
+    margin-top: 4px !important;
+}
+
+/* 修复模态框标题样式 */
+#device-modal .modal-header {
+    padding: 20px 24px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    background: #fff !important;
+}
+
+#device-modal .modal-title {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+}
+
+#device-modal .modal-close {
+    background: none !important;
+    border: none !important;
+    font-size: 24px !important;
+    color: #999 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+}
+
+#device-modal .modal-close:hover {
+    background: #f5f5f5 !important;
+    color: #666 !important;
+}
+/* 设备模型和版本样式 */
+.model-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.badge-version {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* 特征配置样式 */
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.feature-label {
+    min-width: 80px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.feature-item .form-control {
+    flex: 1;
+    max-width: 200px;
+}
+
+.feature-unit {
+    min-width: 30px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* 模型选择器样式 */
+#device-model, #device-model-version {
+    transition: all 0.2s ease;
+}
+
+#device-model:focus, #device-model-version:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+/* 只读特征列表样式 */
+.readonly-feature-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.readonly-feature-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    transition: all 0.2s;
+}
+
+.readonly-feature-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.readonly-feature-item .feature-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.readonly-feature-item .feature-name {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+    flex: 1;
+}
+
+.readonly-feature-item .required-star {
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+.readonly-feature-item .feature-code {
+    font-size: 11px;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.readonly-feature-item .feature-info {
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.readonly-feature-item .feature-description {
+    margin-bottom: 6px;
+    font-style: italic;
+}
+
+.readonly-feature-item .feature-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.readonly-feature-item .feature-type {
+    color: #6c757d;
+    font-size: 11px;
+    background: #e7f3ff;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.readonly-feature-item .feature-unit {
+    color: #28a745;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.readonly-feature-item .feature-value {
+    margin-top: 10px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #007bff;
+}
+
+.readonly-feature-item .value-label {
+    font-size: 11px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.readonly-feature-item .value-content {
+    font-size: 13px;
+    color: #495057;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* 空状态 */
+.no-features-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    grid-column: span 4;
+}
+
+.no-features-grid i {
+    font-size: 36px;
+    color: #adb5bd;
+    margin-bottom: 15px;
+}
+
+.no-features-grid p {
+    margin: 0;
+    color: #6c757d;
+    text-align: center;
+}
+
+/* 分类标题 */
+.feature-category {
+    grid-column: span 4;
+    padding: 10px 0;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 15px;
+}
+
+.feature-category h5 {
+    margin: 0;
+    color: #495057;
+    font-size: 16px;
+}
+
+.feature-category .category-description {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+    .readonly-feature-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .readonly-feature-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .readonly-feature-list {
+        grid-template-columns: 1fr;
+    }
+}
+/* 特征列表样式 */
+.feature-list-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.feature-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa; /* 与容器背景相同 */
+    position: static !important; /* 移除sticky */
+    top: auto !important;
+    z-index: auto !important;
+    flex-shrink: 0; /* 防止头部被压缩 */
+}
+
+.feature-list-header h5 {
+    margin: 0;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.feature-list-header small {
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.features-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.features-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.feature-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.feature-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.feature-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95em;
+}
+
+.feature-code {
+    font-size: 0.8em;
+    background: #e9ecef;
+    color: #495057;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.feature-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.feature-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+}
+
+.detail-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #2c3e50;
+    text-align: right;
+}
+
+.detail-value.required {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.feature-desc {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 0.8em;
+    color: #6c757d;
+}
+
+/* 加载状态 */
+.feature-list-container .loading {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+}
+
+.feature-list-container .loading i {
+    margin-right: 8px;
+}
+
+/* 空状态 */
+.no-features {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+}
+
+.no-features i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* 错误状态 */
+.error {
+    text-align: center;
+    padding: 30px;
+    color: #dc3545;
+}
+
+.error i {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.error p {
+    margin-bottom: 15px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .features-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .features-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .features-row {
+        grid-template-columns: 1fr;
+    }
+}
+/* 特征列表容器优化 */
+#feature-list-container {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    max-height: 400px; /* 设置最大高度 */
+    overflow-y: auto;  /* 启用垂直滚动 */
+}
+
+/* 特征卡片样式优化 */
+.feature-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 10;
+    padding-top: 5px;
+}
+
+.feature-list-header h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.feature-list-header small {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+/* 特征网格布局 - 改为每行3列，卡片更紧凑 */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+/* 特征卡片 - 更紧凑的样式 */
+.feature-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.2s ease;
+    height: 100%;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: #3498db;
+}
+
+.feature-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 40px;
+}
+
+.feature-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 13px;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.feature-code {
+    font-size: 10px;
+    background: #e9ecef;
+    color: #495057;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    margin-left: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.feature-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.feature-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.detail-label {
+    color: #6c757d;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.detail-value {
+    color: #2c3e50;
+    text-align: right;
+    word-break: break-word;
+    max-width: 120px;
+}
+
+.detail-value.required {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.feature-desc {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 11px;
+    color: #6c757d;
+    line-height: 1.4;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 限制显示2行 */
+    -webkit-box-orient: vertical;
+}
+
+/* 加载状态 */
+#feature-list-container .loading {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+#feature-list-container .loading i {
+    margin-right: 8px;
+}
+
+/* 空状态 */
+.no-features {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+    font-size: 14px;
+    grid-column: 1 / -1; /* 跨所有列 */
+}
+
+.no-features i {
+    font-size: 36px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+/* 错误状态 */
+.error {
+    text-align: center;
+    padding: 30px;
+    color: #dc3545;
+    font-size: 14px;
+    grid-column: 1 / -1; /* 跨所有列 */
+}
+
+.error i {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.error p {
+    margin-bottom: 15px;
+}
+
+.error .btn {
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 特征统计信息 */
+.feature-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    font-size: 12px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #495057;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* 特征筛选和搜索 */
+.feature-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.feature-search {
+    flex: 1;
+    position: relative;
+}
+
+.feature-search input {
+    width: 100%;
+    padding: 6px 12px 6px 32px;
+    font-size: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.feature-search i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.feature-filter {
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+/* 特征分类标签 */
+.feature-category {
+    font-size: 10px;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+/* 模态框内特征区域优化 */
+#device-modal .tab-content.active {
+    max-height: calc(70vh - 120px);
+    overflow-y: auto;
+    padding-right: 5px; /* 为滚动条留出空间 */
+}
+
+/* 隐藏水平滚动条 */
+#device-modal .modal-body {
+    overflow-x: hidden;
+}
+
+/* 优化特征列表的滚动条 */
+#feature-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#feature-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#feature-list-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#feature-list-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+/* 修改模态框宽度 - 增加宽度来容纳更多特征 */
+#device-modal .modal-content {
+    max-width: 900px !important;  /* 增加模态框宽度 */
+    width: 90vw !important;       /* 相对视窗宽度 */
+}
+
+/* 修改模态框高度 - 增加高度 */
+#device-modal .modal-body {
+    max-height: 75vh !important;  /* 增加高度 */
+    min-height: 400px !important; /* 最小高度确保内容可见 */
+    padding: 24px !important;
+}

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>智慧暖通系统</title>
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/custom.min.css" rel="stylesheet">
+		<script src="js/jquery.min.js"></script>
+		<style>
+			html {
+				height: 0;
+			}
+
+			.login_content {
+				color: white;
+				text-shadow: 0 1px 0 #ffffff70;
+
+			}
+
+			.logtips {
+				text-shadow: none;
+			}
+
+			.bgimg {
+				position: absolute;
+				z-index: -1;
+				width: 100%;
+				height: 100%;
+				background-size: cover;
+				background-position: center;
+				margin-top: -5%;
+			}
+
+			.login_wrapper {
+				position: relative;
+				margin-right: 23%;
+			}
+
+			.login_form {
+				margin-top: 10vw;
+			}
+
+			.zhntxt {
+				text-align: center;
+				font-size: 40px;
+				margin-bottom: 32px;
+				word-break: break-all;
+				letter-spacing: 2px;
+				white-space: break-spaces;
+				color: black;
+				font-weight: bold;
+			}
+		</style>
+
+	</head>
+	<body class="login">
+		<img class="bgimg" src="img/bg_4.png" alt="" />
+		<div>
+			<a class="hiddenanchor" id="signup"></a>
+			<a class="hiddenanchor" id="signin"></a>
+
+			<div class="login_wrapper">
+
+				<div style="display: flex; position: fixed; right: 1vw; top: 1vw; color: white;">
+					已连接ip:
+					<ul style="color: white;" id="stxip">
+						<!-- <li>10-25 16:32</li>
+						<li>111110-25 16:32</li> -->
+					</ul>
+				</div>
+				<script type="text/javascript">
+					var iplist = [];
+					var iplisthtml = [];
+					//接收stxiplistname列表
+					function stxiplist() {
+						$.ajax({
+							type: "GET",
+							url: 'http://' + websocket + '/stx/iplist',
+							async: true,
+							data: [],
+							success: function(data) { //保存成功后，返回data，里面包含 stage_id  ,应为再次点击“保存”就是修改
+								iplisthtml = [];
+								if (data.data == 1) {
+									for (let i = 0; i < data.msg.length; i++) {
+										iplist[i] = data.msg[i].trim();
+									}
+									console.log(iplist);
+									for (let i = 0; i < iplist.length; i++) {
+										iplisthtml[i] = `<li>` + iplist[i] + `</li>`;
+									}
+									$('#stxip').html(iplisthtml);
+								}
+
+							}
+						});
+					}
+					setInterval(function() {
+						if (websocket) {
+							stxiplist();
+						}
+					}, 1000);
+					// var setiplist = setInterval(function() {
+					// 	if (websocket) {
+					// 		stxiplist();
+					// 		if (iplist && iplist.length != 0) {
+					// 			clearInterval(setiplist);
+					// 		}
+					// 	}
+					// }, 1000);
+				</script>
+
+				<div class="animate form login_form">
+					<div class="zhntxt">智慧暖通系统</div>
+					<section class="login_content">
+						<form>
+							<h1 style="color:black;">登 录</h1>
+							<div class="logname logtips" style="display: inline; width: 100%; color: red;"></div>
+							<div>
+								<input type="text" autocomplete="off" name="loguserName" class="form-control"
+									value="用户名" required="" />
+							</div>
+							<div class="logpwd logtips" style="display: inline; width: 100%; color: red;"></div>
+							<div>
+								<input id="keypwd" type="password" name="logpwd" class="form-control" placeholder="密码"
+									required="" />
+							</div>
+
+							<div class="clearfix"></div>
+
+							<div class="separator">
+								<div class="clearfix"></div>
+								<br />
+								<div>
+								</div>
+							</div>
+						</form>
+					</section>
+				</div>
+			</div>
+			<div>
+				<div
+					style="top:34.7vw;position: absolute;left:58.3vw;width:350px;height:50px;background:#4a90e2;cursor:pointer;">
+				</div>
+				<a class="btn btn-default submit" style="top:34.5vw;position: absolute;
+				left:58.3vw;width:350px;height:50px;color:white;font-size: 1.5vw;cursor:pointer;"
+					id="loginbtn">登&nbsp;&nbsp;&nbsp;录</a>
+			</div>
+		</div>
+
+
+		<script type="text/javascript">
+			var loguserNameStr, logpwdStr, reguserNameStr, regpwdStr, regpwdAgainStr;
+			$(function() {
+				//1.用户名
+				$(":text[name=loguserName]").focus(function() {
+
+					//得到焦点时，判断当前文本框中的值，如果是默认值，则删除
+					if (this.value == this.defaultValue) {
+						this.value = "";
+					}
+				}).blur(function() {
+					//失去焦点时对文本内容进行验证
+					//去前后空格
+					var flagname = 'logname';
+					loguserNameStr = $.trim(this.value);
+
+					//如果去掉前后空格后为空字符串，则恢复为默认值
+					if (loguserNameStr == "") {
+						loguserNameStr = this.defaultValue;
+					}
+
+					//使用正则表达式进行验证
+					showError(regObj.userNameReg.test(loguserNameStr), errorMsg.userNameFlag, flagname);
+
+					//最后将去掉前后空格的值写回文本框
+					this.value = loguserNameStr;
+
+					//设置能否提交的标识符
+					submitFlag.userNameFlag = regObj.userNameReg.test(loguserNameStr);
+
+				});
+				//2.密码
+				$(":password[name=logpwd]").blur(function() {
+					var flagname = 'logpwd';
+					logpwdStr = $.trim(this.value);
+					showError(regObj.pwdReg.test(logpwdStr), errorMsg.pwdFlag, flagname);
+					submitFlag.pwdFlag = regObj.pwdReg.test(logpwdStr);
+				});
+				//3.登陆按钮
+
+				$("#loginbtn").click(function() {
+					var username;
+					var userlv;
+					var loginstatus;
+					// for (var flag in submitFlag) {
+					// 	if (!submitFlag[flag]) {
+					// 		if (flag == 'userNameFlag') {
+					// 			showError(false, errorMsg[flag], 'logname');
+					// 		} else if (flag == 'pwdFlag') {
+					// 			showError(false, errorMsg[flag], 'logpwd');
+					// 		}
+					// 	}
+					// }
+					// if (submitFlag.pwdFlag && submitFlag.userNameFlag) {
+						$.ajax({
+							type: "POST",
+							url: 'http://' + websocket + '/user/loginin',
+							data: {
+								'xm_user_configinfo': initjson.mysqlconfigdata.xm_user_configinfo,
+								'xm_username': initjson.mysqluserconfig.xm_username,
+								'xm_password': initjson.mysqluserconfig.xm_password,
+								'xm_userlv': initjson.mysqluserconfig.xm_userlv,
+								'xm_loginhislog': initjson.mysqlhisdata.xm_loginhislog,
+								'loguserNameStr': loguserNameStr,
+								'logpwdStr': logpwdStr,
+								'userip': userip,
+								'timenow': timenow
+							},
+							headers: {
+								'Authorization': 'Bearer '
+							},
+							cache: false,
+							async: true,
+							beforeSend: function() {
+								//请求前要处理的事情
+							},
+							success: function(data) { //保存成功后，返回data，里面包含 stage_id  ,应为再次点击“保存”就是修改
+								if (data.data == '1') {
+									// alert('添加成功');
+									// alarmdevname = data.msg;
+									username = data.msg[0][initjson.mysqluserconfig.xm_username];
+									userlv = data.msg[0][initjson.mysqluserconfig.xm_userlv];
+									loginstatus = data.data;
+									setCookie('name', username, 30);
+									setCookie('ip', userip, 30);
+									setCookie('ls', loginstatus, 30);
+									setCookie('lv', userlv, 30);
+									console.log(data);
+								} else if (data.data == '0') {
+									console.log(data);
+									alert('登陆失败，请检查用户名或密码是否正确！');
+								}
+							},
+							error: function(e) {
+								alert('请求失败', {
+									offset: 't',
+									anim: 6,
+									icon: 2
+								});
+							}
+						});
+					// } else {
+					// 	console.log('登陆失败');
+					// 	//阻止表单提交
+					// 	return false;
+					// }
+				});
+				$("#keypwd").on('keydown', function(e) {
+					if (e.keyCode === 13) { // 检查按键是否是 Enter
+						$("#keypwd").blur();
+						$("#loginbtn").click(); // 触发按钮的点击事件
+					}
+				});
+
+			});
+		</script>
+		<script type="text/javascript">
+			// var regObj = {
+			// 	userNameReg: /^[a-zA-Z_][a-zA-Z_\-0-9]{5,9}$/,
+			// 	pwdReg: /^[a-zA-Z0-9]{6,12}$/,
+			// 	emailReg: /^[a-zA-Z0-9_\.-]+@([a-zA-Z0-9-]+[\.]{1})+[a-zA-Z]+$/
+			// };
+			var regObj = {
+				userNameReg: ,
+				pwdReg: ,
+				emailReg:
+			};
+
+			// 使用全局变量作为表单提交能否放行的标记
+			var submitFlag = {
+				userNameFlag: false,
+				pwdFlag: false,
+				pwdAgainFlag: false,
+				emailFlag: true, // Email默认情况下允许提交
+				reset: function() {
+					this.userNameFlag = false;
+					this.pwdFlag = false;
+					this.pwdAgainFlag = false;
+					this.emailFlag = true;
+				},
+				toString: function() {
+					return this.userNameFlag + " " + this.pwdFlag + " " + this.pwdAgainFlag + " " + this.emailFlag;
+				}
+			};
+
+			// 将错误消息封装到一个对象中
+			var errorMsg = {
+				userNameFlag: "^_^用户名要求字母开头，6-10位数字字母下划线-组成!",
+				pwdFlag: "^_^密码要求6-12位大小写字母数字!",
+				pwdAgainFlag: "^_^确认密码必须和密码一致!",
+				emailFlag: "^_^Email格式不正确!"
+			};
+
+			function showError(flag, message, flagname) {
+				if (flag) {
+					//如果能够通过验证，则清除错误信息
+					//使用text()函数不能正确识别&nbsp;，所以改用 html()函数
+					switch (flagname) {
+						case 'logname':
+							$(".logname").text("");
+							break;
+						case 'logpwd':
+							$(".logpwd").text("");
+							break;
+						case 'regname':
+							$(".regname").text("");
+							break;
+						case 'regpwd':
+							$(".regpwd").text("");
+							break;
+						case 'regpwdag':
+							$(".regpwdag").text("");
+							break;
+					}
+				} else {
+					//如果不能通过验证，则在#msgTd显示错误信息
+					switch (flagname) {
+						case 'logname':
+							$(".logname").text(message);;
+							break;
+						case 'logpwd':
+							$(".logpwd").text(message);;
+							break;
+						case 'regname':
+							$(".regname").text(message);;
+							break;
+						case 'regpwd':
+							$(".regpwd").text(message);;
+							break;
+						case 'regpwdag':
+							$(".regpwdag").text(message);;
+							break;
+					}
+				}
+			}
+		</script>
+		<script type="text/javascript">
+			setInterval(function() {
+				// console.log(getCookie('name'));
+				// console.log(getCookie('ip'));
+				if (getCookie('ls') == 1) {
+					window.location.href = 'System-all/System-all.html';
+				}
+			}, 500);
+		</script>
+		<script type="text/javascript">
+			var devpoint;
+			var initjson;
+			var websocket;
+			var userip = '';
+			// 页面加载完成后执行
+			$(function() {
+				var url = new URL(window.location.href);
+				var host = url.host; // 获取主机名（包括端口号，如果有）
+				console.log(host); // 输出主机名
+				$.getJSON("uploads/manage/byzt/config/init.json", function(data) {
+					initjson = data;
+					// console.log(initjson);
+					const domain = window.location.hostname;
+					if (domain.includes('127.0.0.1') || domain.includes('localhost')) {
+						websocket = initjson.serviceIpPort;
+						console.log(websocket);
+					} else if (domain.includes(initjson.serviceUrlPortLan)) {
+						websocket = initjson.serviceIpPortLan;
+					} else {
+						// websocket = initjson.serviceIpPortNet;
+						websocket = host + ':1880';
+					}
+				});
+				$.ajax({
+					url: 'https://api64.ipify.org?format=json', // 使用ipify的JSON API
+					type: 'GET',
+					dataType: 'json',
+					success: function(data) {
+						console.log('用户的IP地址是：' + data.ip); // 输出IP地址
+						userip = data.ip;
+					},
+					error: function(xhr, status, error) {
+						console.error('获取IP地址失败：', status, error);
+						userip = 'localhost';
+					}
+				});
+			});
+		</script>
+
+
+
+		<script src="js/varfunction.js"></script>
+		<!-- <script src="js/websocket.js"></script> -->
+	</body>
+</html>

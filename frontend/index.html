@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工业负荷预测系统 - 主仪表板</title>
+
+    <!-- ECharts 库 -->
+    <script src="js/echarts.min.js"></script>
+
+    <!-- 样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <!-- 图标库 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 主要内容区 -->
+    <main class="main-content">
+        <!-- 项目概览卡片 -->
+        <div class="dashboard-section">
+            <h2><i class="fas fa-chart-pie"></i> 项目概览</h2>
+            <div class="overview-cards" id="overview-cards">
+                <div class="card">
+                    <div class="card-icon project-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>项目总数</h3>
+                        <div class="card-value" id="project-count">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon device-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>设备总数</h3>
+                        <div class="card-value" id="device-count">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon running-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>运行中设备</h3>
+                        <div class="card-value" id="running-devices">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon feature-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>特征总数</h3>
+                        <div class="card-value" id="feature-count">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设备状态卡片 -->
+        <div class="dashboard-section">
+            <h2><i class="fas fa-server"></i> 设备状态</h2>
+            <div class="device-status-cards" id="device-status-cards">
+                <!-- 动态加载设备状态卡片 -->
+                <div class="loading">正在加载设备状态...</div>
+            </div>
+        </div>
+
+        <!-- 实时图表区 -->
+        <div class="dashboard-section">
+            <div class="chart-header">
+                <h2><i class="fas fa-chart-line"></i> 实时监测</h2>
+                <div class="chart-controls">
+                    <div class="time-range">
+                        <button class="btn-time active" data-range="1h">1小时</button>
+                        <button class="btn-time" data-range="6h">6小时</button>
+                        <button class="btn-time" data-range="24h">24小时</button>
+                        <button class="btn-time" data-range="custom">自定义</button>
+                    </div>
+                    <div class="refresh-control">
+                        <button id="refresh-btn" class="btn-refresh">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                        <label class="auto-refresh">
+                            <input type="checkbox" id="auto-refresh" checked>
+                            <span>自动刷新 (30秒)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <!-- 设备负荷曲线图 -->
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <h3><i class="fas fa-bolt"></i> 设备负荷曲线</h3>
+                        <div class="chart-selector">
+                            <select id="load-device-select">
+                                <option value="">选择设备...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div id="load-chart" style="width: 100%; height: 400px;"></div>
+                    </div>
+                </div>
+
+                <!-- 预测 vs 实际对比图 -->
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <h3><i class="fas fa-chart-bar"></i> 预测 vs 实际对比</h3>
+                        <div class="chart-selector">
+                            <select id="prediction-device-select">
+                                <option value="">选择设备...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div id="prediction-chart" style="width: 100%; height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页面切换容器（用于后续功能） -->
+    <div id="page-container" style="display: none;"></div>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/components/navbar.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/main.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navbarContainer = document.getElementById('navbar-container');
+        if (navbarContainer && typeof Navbar !== 'undefined') {
+            // 初始化导航栏，并告知当前页面是 'dashboard'
+            Navbar.init(navbarContainer, 'dashboard');
+        }
+    });
+</script>
+</body>
+</html>

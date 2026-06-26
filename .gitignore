@@ -1,0 +1,68 @@
+# ========================================
+# 黑名单模式：明确排除所有不需要的目录和文件类型
+# ========================================
+
+# 大文件目录
+/models/
+/whisper-packages/
+/whisper-local/
+/knowledges/
+
+# 数据和日志
+/data/
+/dataset/
+/logs/
+/backend/uploads/
+/uploads/
+/backend/Ai/
+
+# IDE 和缓存
+/.idea/
+/.vscode/
+/.codegraph/
+/.claude/
+__pycache__/
+*.pyc
+*.pkl
+*.joblib
+*.h5
+*.pb
+*.onnx
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.gguf
+*.whl
+*.pptx
+*.ppt
+*.docx
+*.pdf
+*.zip
+*.tar.gz
+*.7z
+*.gz
+*.rar
+
+# 数据文件
+*.csv
+*.xlsx
+*.parquet
+
+# 环境配置
+.env
+local_config.py
+config_local.ini
+
+# 重复/临时文件夹
+/hr/
+/办公室进门第一个/
+/img/
+/temp.md
+/notes.md
+
+# 其他大文件
+*.cache
+*.tmp
+*.temp
+*.log

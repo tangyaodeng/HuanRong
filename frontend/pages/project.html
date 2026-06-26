@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目管理 - 智慧暖通AI预测系统</title>
+    <!-- 修正CSS路径：从根目录开始 -->
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+    <link rel="stylesheet" href="/frontend/css/notification.css">
+    <link rel="stylesheet" href="/frontend/css/chat-widget.css">
+    <link rel="stylesheet" href="/frontend/css/voice-input.css">
+    <link rel="stylesheet" href="/frontend/css/all.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-project-diagram"></i> 项目管理</h1>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="create-project-btn">
+                    <i class="fas fa-plus"></i> 创建项目
+                </button>
+            </div>
+        </div>
+
+        <!-- 筛选工具栏 -->
+        <div class="filter-toolbar">
+            <div class="filter-group">
+                <label for="status-filter">状态筛选:</label>
+                <select id="status-filter" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="active">使用中</option>
+                    <option value="inactive">未使用</option>
+                </select>
+            </div>
+            <div class="search-group">
+                <div class="search-input-group">
+                    <input type="text" id="search-input" class="form-control" placeholder="搜索项目名称或描述...">
+                    <button class="btn btn-secondary" id="search-btn" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-secondary" id="reset-filters">重置</button>
+                <button class="btn btn-primary" id="apply-filters">筛选</button>
+            </div>
+        </div>
+
+        <!-- 项目概览卡片 -->
+        <div class="overview-cards" style="margin-bottom: 20px;">
+            <div class="card">
+                <div class="card-icon" style="background-color: #3498db;">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="card-content">
+                    <h3>项目总数</h3>
+                    <div class="card-value" id="total-projects">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background-color: #2ecc71;">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h3>使用项目</h3>
+                    <div class="card-value" id="active-projects">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background-color: #9b59b6;">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="card-content">
+                    <h3>总设备数</h3>
+                    <div class="card-value" id="total-devices">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 项目表格 -->
+        <div class="data-table-container">
+            <table class="data-table" id="project-table">
+                <thead>
+                    <tr>
+                        <th>项目名称</th>
+                        <th width="100">项目代码</th>
+                        <th width="120">状态</th>
+                        <th width="100">设备数</th>
+                        <th width="150">创建时间</th>
+                        <th width="150">最后更新</th>
+                        <th width="180">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="project-table-body">
+                    <tr><td colspan="7" class="loading">正在加载项目数据...</td></tr>
+                </tbody>
+            </table>
+            <!-- 分页 -->
+            <div class="pagination" id="project-pagination">
+                <button class="btn-pagination" id="prev-page" disabled><i class="fas fa-chevron-left"></i> 上一页</button>
+                <span class="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
+                <button class="btn-pagination" id="next-page" disabled>下一页 <i class="fas fa-chevron-right"></i></button>
+                <div class="page-size">
+                    <select id="page-size" class="form-select">
+                        <option value="10">每页10条</option><option value="20">每页20条</option><option value="50">每页50条</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 项目编辑/创建模态框 -->
+    <div class="modal" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">创建新项目</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-name" class="form-label required">项目名称</label>
+                        <input type="text" id="project-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-code" class="form-label required">项目代码</label>
+                        <input type="text" id="project-code" class="form-control" required>
+                        <div class="form-hint">用于系统识别的唯一英文代码，如：PROJ_001</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-description" class="form-label">项目描述</label>
+                        <textarea id="project-description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-status" class="form-label">项目状态</label>
+                            <select id="project-status" class="form-select">
+                                <option value="active">使用中</option>
+                                <option value="inactive">未使用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-tags" class="form-label">项目标签</label>
+                        <input type="text" id="project-tags" class="form-control" placeholder="多个标签用逗号分隔">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">取消</button>
+                <button class="btn btn-primary" id="modal-save">保存项目</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <!-- 修正JS路径：从根目录开始 -->
+    <script src="/frontend/js/utils.js"></script>
+<!--    <script src="/frontend/js/api.js"></script>-->
+    <script src="/frontend/js/components/navbar.js"></script>
+    <script src="/frontend/js/pages/project-api.js"></script>
+    <script src="/frontend/js/components/voice-input.js"></script>
+    <script src="/frontend/js/components/chat-widget.js"></script>
+    <script src="/frontend/js/pages/project.js"></script>
+    <script>
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化导航栏
+            const navbarContainer = document.getElementById('navbar-container');
+            if (navbarContainer && typeof Navbar !== 'undefined') {
+                console.log('正在初始化导航栏...');
+                Navbar.init(navbarContainer, 'projects');
+            } else {
+                console.error('导航栏容器或 Navbar 未找到');
+            }
+
+            // 初始化项目管理器
+            if (typeof ProjectManager !== 'undefined') {
+                console.log('正在初始化 ProjectManager...');
+                ProjectManager.init();
+            } else {
+                console.error('ProjectManager 未定义！');
+            }
+        });
+    </script>
+</body>
+</html>

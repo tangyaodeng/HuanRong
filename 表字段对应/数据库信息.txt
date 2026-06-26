@@ -1,0 +1,7 @@
+# 数据库配置
+    DATABASE_URL: str = "postgresql://postgres:123456@192.168.5.240:5432/HuanRong"
+ # Redis 配置（用于冷冻水优化缓存）
+    REDIS_HOST: str = "192.168.5.240"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None   # 无密码则为 None

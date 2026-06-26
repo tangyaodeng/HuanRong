@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>参数优化 - 冷却侧优化模型</title>
+
+    <!-- 样式 -->
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+    <link rel="stylesheet" href="/frontend/css/all.min.css">
+    <link rel="stylesheet" href="/frontend/css/parameter-optimization.css">
+    <!-- ECharts -->
+    <script src="/frontend/js/echarts.min.js"></script>
+
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 主要内容区 -->
+    <main class="main-content">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="margin:0;"><i class="fas fa-sliders-h"></i> 参数优化 - 冷却侧优化模型</h1>
+            <button class="btn btn-primary" id="optim-status-btn">
+                <i class="fas fa-info-circle"></i> 优化状态
+            </button>
+        </div>
+        
+        <!-- 在 main 结束前添加新弹窗（与 history-modal 并列） -->
+        <div id="optim-status-modal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:450px; max-height:80vh; height:auto; background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:1001;">
+            <div class="modal-header" style="padding:12px 20px; border-bottom:1px solid #e9ecef; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:1.1em;">
+                    <i class="fas fa-clipboard-check"></i> 优化下发状态
+                </h3>
+                <button id="optim-status-close" style="background:none; border:none; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:15px 20px;">
+                <div id="optim-status-content" style="font-size:0.95rem;">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 主优化容器：左侧参数控制(20%) + 中间大图表(55%) + 右侧优化对比(25%) -->
+        <div class="optimization-main-container">
+
+            <!-- 左侧：参数控制（20%） -->
+            <div class="left-controls">
+                <div class="section-title">
+                    <i class="fas fa-cog"></i> 参数控制
+                </div>
+
+                <div class="control-grid">
+                    <!-- 参数1: 冷却水回水温度范围 -->
+                    <div class="control-item">
+                        <label class="control-label">回水温度下限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-lower-limit"
+                                   min="0.5" max="5" step="0.1">
+                            <span class="control-unit">℃</span>
+                        </div>
+                        <div class="control-note">湿球温度 + n</div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">回水温度上限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-upper-limit-1"
+                                   min="30" max="40" step="0.1">
+                            <span class="control-unit">℃</span>
+                        </div>
+                        <div class="control-note">步长: 0.1℃</div>
+                    </div>
+
+                    <!-- 参数2: 冷却水供水温度范围 -->
+                    <div class="control-item">
+                        <label class="control-label">供水温度下限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-lower-limit-2"
+                                   min="0.5" max="5" step="0.1">
+                            <span class="control-unit">℃</span>
+                        </div>
+                        <div class="control-note">湿球温度 + n</div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">供水温度上限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-upper-limit-2"
+                                   min="35" max="45" step="0.1">
+                            <span class="control-unit">℃</span>
+                        </div>
+                        <div class="control-note">步长: 0.1℃</div>
+                    </div>
+
+                    <!-- 参数3: 冷却水温差优化范围 -->
+                    <div class="control-item">
+                        <label class="control-label">供回水温差下限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-diff-lower"
+                                   min="1" max="4" step="0.5">
+                            <span class="control-unit">℃</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">供回水温差上限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-diff-upper"
+                                   min="6" max="10" step="0.5">
+                            <span class="control-unit">℃</span>
+                        </div>
+                    </div>
+
+                    <!-- 参数4: 散热量范围 -->
+                    <div class="control-item">
+                        <label class="control-label">散热量下限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="heat-lower"
+                                   min="90" max="98" step="0.5">
+                            <span class="control-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">散热量上限</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="heat-upper"
+                                   min="102" max="110" step="0.5">
+                            <span class="control-unit">%</span>
+                        </div>
+                    </div>
+
+                    <!-- 新增：阈值参数 -->
+                    <div class="control-item">
+                        <label class="control-label">回水温度阈值</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="return-temp-threshold"
+                                   min="0" max="10" step="0.1">
+                            <span class="control-unit">℃</span>
+                        </div>
+                        <div class="control-note">≥±阈值才会下发</div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">温差阈值</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="temp-diff-threshold"
+                                   min="0" max="10" step="0.1">
+                            <span class="control-unit">℃</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">节能率阈值</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="energy-saving-threshold"
+                                   min="0" max="100" step="0.1">
+                            <span class="control-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">寻优周期</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="optimization-cycle"
+                                   min="1" max="60" step="1" value="5">
+                            <span class="control-unit">分钟</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">R² 阈值</label>
+                        <div class="control-input-group">
+                            <input type="number" class="control-input" id="r2-threshold"
+                                min="0" max="1" step="0.01" value="0.6">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 保存按钮 -->
+                <div class="save-section">
+                    <button class="btn btn-success save-btn" id="save-params-btn">
+                        <i class="fas fa-save"></i> 保存配置
+                    </button>
+                </div>
+
+                <!-- 设备状态区域 -->
+                <div class="device-status-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i> 设备状态
+                    </div>
+                    <div class="device-status-content" id="device-status-content">
+                        正在加载设备状态...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中部：大图表（55%） -->
+            <div class="center-chart">
+                <div class="big-chart-container" style="padding: 10px; display: flex; flex-direction: column;">
+                    <!-- 上部：查询模式图表 -->
+                    <div style="height: 50%; border-bottom: 1px solid #e9ecef; padding-bottom: 5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <h4 style="margin:0; font-size: 1em; color: #2c3e50;">
+                                <i class="fas fa-chart-line"></i> 查询模式 - 设备总功率优化趋势
+                            </h4>
+                            <div class="chart-time-controls" style="gap: 4px;">
+                                <input type="datetime-local" class="start-time" id="chart-start-time" style="width: 130px;">
+                                <span>至</span>
+                                <input type="datetime-local" class="end-time" id="chart-end-time" style="width: 130px;">
+                                <button class="btn btn-secondary btn-sm" id="apply-chart-time"><i class="fas fa-check"></i></button>
+                                <button class="btn btn-outline-secondary btn-sm" id="reset-chart-time" title="重置为最近1小时"><i class="fas fa-undo"></i></button>
+                            </div>
+                        </div>
+                        <div id="query-chart" style="width: 100%; height: calc(100% - 40px);"></div>
+                    </div>
+
+                    <!-- 下部：寻优模式图表 -->
+                    <div style="height: 50%; padding-top: 5px;">
+                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+    <h4 style="margin:0; font-size: 1em; color: #2c3e50;">
+        <i class="fas fa-sync-alt"></i> 寻优模式 - 迭代寻优过程
+    </h4>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="optim-info" style="font-size:0.9em; color:#6c757d;">
+            最新迭代时间: <span id="iteration-timestamp">--</span>
+        </div>
+        <button id="play-optim-animation" class="btn btn-primary btn-sm">播放动画</button>
+    </div>
+</div>
+                        <div id="optim-chart" style="width: 100%; height: calc(100% - 40px);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：优化对比（25%） -->
+            <div class="right-comparison">
+                <!-- 标题：参数优化 -->
+                <div class="section-title">
+                    <i class="fas fa-balance-scale"></i> 参数优化
+                </div>
+
+                <!-- 上部分：冷却参数（供水温度、回水温度、温差、散热量） -->
+                <div class="comparison-grid" id="cooling-params-grid">
+                    <!-- 表头 -->
+                    <div class="comparison-header">当前</div>
+                    <div class="comparison-header">优化</div>
+                    <div class="comparison-header">差值</div>
+                    <div class="comparison-header">历史</div>
+
+                    <!-- 冷却水供水温度行（索引0-3） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">冷却水供水温度</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">冷却水供水温度</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">冷却水供水温度</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+
+                    <!-- 冷却水回水温度行（索引4-7） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">冷却水回水温度</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">冷却水回水温度</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">冷却水回水温度</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+
+                    <!-- 冷却水温差行（索引8-11） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">冷却水温差</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">冷却水温差</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">冷却水温差</div>
+                        <div class="comparison-value">--<span class="comparison-unit">℃</span></div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+
+                    <!-- 散热量行（索引12-15） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">散热量</div>
+                        <div class="comparison-value">--<span class="comparison-unit">%</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">散热量</div>
+                        <div class="comparison-value">--<span class="comparison-unit">%</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">散热量</div>
+                        <div class="comparison-value">--<span class="comparison-unit">%</span></div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+                </div>
+
+                <!-- 中间摘要：节能信息 + 更新时间 -->
+                <div style="margin: 12px 0; text-align: center; border-top: 1px solid #e9ecef; border-bottom: 1px solid #e9ecef; padding: 8px 0;">
+                    <div style="font-weight: 600; color: #28a745; font-size: 1.1em;">
+                        预计总节能: <span id="total-energy-saving">0.0 kW</span>
+                    </div>
+                    <div style="color: #6c757d; font-size: 0.85em;">
+                        节能比例: <span id="energy-saving-percent">0.0%</span>
+                        更新时间: <span id="update-time-text">--</span>
+                    </div>
+                </div>
+
+                <!-- 下部分：节能控制（设备功率类） -->
+                <div class="section-title" style="margin-top: 0;">
+                    <i class="fas fa-leaf"></i> 节能控制
+                </div>
+                <div class="comparison-grid" id="energy-control-grid">
+                    <!-- 表头：当前 优化 节能 历史 -->
+                    <div class="comparison-header">当前</div>
+                    <div class="comparison-header">优化</div>
+                    <div class="comparison-header">节能</div>
+                    <div class="comparison-header">历史</div>
+
+                    <!-- 设备总功率（索引16-19） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">设备总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">设备总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">设备总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                        <div class="comparison-note">(--%)</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+
+                    <!-- 主机总功率（索引20-23） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">主机总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">主机总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">主机总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                        <div class="comparison-note">(--%)</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+
+                    <!-- 冷却塔总功率（索引24-27） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">冷却塔总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">冷却塔总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">冷却塔总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                        <div class="comparison-note">(--%)</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+
+                    <!-- 冷却泵总功率（索引28-31） -->
+                    <div class="comparison-item current-value">
+                        <div class="comparison-label">冷却泵总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item optimized-value">
+                        <div class="comparison-label">冷却泵总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                    </div>
+                    <div class="comparison-item difference-value">
+                        <div class="comparison-label">冷却泵总功率</div>
+                        <div class="comparison-value">--<span class="comparison-unit">kW</span></div>
+                        <div class="comparison-note">(--%)</div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-check">查询</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- 历史数据查询弹窗 -->
+    <div id="history-modal" class="modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:800px; height:600px; background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:1000;">
+        <div class="modal-header" style="padding:15px 20px; border-bottom:1px solid #e9ecef; display:flex; justify-content:space-between; align-items:center;">
+            <h3 id="modal-title" style="margin:0; font-size:1.2em;">历史数据查询</h3>
+            <button id="modal-close" style="background:none; border:none; font-size:1.5em; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+            <div class="chart-time-controls" style="margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                <input type="datetime-local" id="modal-start-time" class="start-time">
+                <span>至</span>
+                <input type="datetime-local" id="modal-end-time" class="end-time">
+                <button class="btn btn-secondary" id="modal-apply-time"><i class="fas fa-check"></i> 应用</button>
+                <button class="btn btn-outline-secondary" id="modal-reset-time" title="重置为最近1小时"><i class="fas fa-undo"></i></button>
+            </div>
+            <div id="modal-chart" style="width:750px; height:400px;"></div>
+        </div>
+    </div>
+<!-- 遮罩层 -->
+<div id="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>
+    <!-- JavaScript -->
+    <script src="/frontend/js/pages/cooling_opt-api.js"></script>
+    <script src="/frontend/js/pages/cooling_opt.js"></script>
+    <script src="/frontend/js/components/navbar.js"></script>
+</body>
+</html>

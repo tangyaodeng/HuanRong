@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识投喂 - 智慧暖通AI预测系统</title>
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+    <link rel="stylesheet" href="/frontend/css/notification.css">
+    <link rel="stylesheet" href="/frontend/css/chat-widget.css">
+    <link rel="stylesheet" href="/frontend/css/voice-input.css">
+    <link rel="stylesheet" href="/frontend/css/all.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-upload"></i> 知识投喂</h1>
+            <div class="page-actions">
+                <button class="btn btn-danger" id="batch-delete-btn" style="display:none;">
+                    <i class="fas fa-trash"></i> 批量删除 (<span id="selected-count">0</span>)
+                </button>
+                <button class="btn btn-primary" id="upload-file-btn">
+                    <i class="fas fa-plus"></i> 上传文件
+                </button>
+            </div>
+        </div>
+
+        <!-- 筛选工具栏 -->
+        <div class="filter-toolbar">
+            <div class="filter-group">
+                <label for="status-filter">状态筛选:</label>
+                <select id="status-filter" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="pending">待处理</option>
+                    <option value="indexing">索引中</option>
+                    <option value="completed">已完成</option>
+                    <option value="failed">失败</option>
+                </select>
+            </div>
+            <div class="search-group">
+                <div class="search-input-group">
+                    <input type="text" id="search-input" class="form-control" placeholder="搜索文件名...">
+                    <button class="btn btn-secondary" id="search-btn" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-secondary" id="reset-filters">重置</button>
+                <button class="btn btn-primary" id="apply-filters">筛选</button>
+            </div>
+        </div>
+
+        <!-- 概览卡片（可选） -->
+        <div class="overview-cards" style="margin-bottom: 20px;">
+            <div class="card">
+                <div class="card-icon" style="background-color: #3498db;">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3>文件总数</h3>
+                    <div class="card-value" id="total-files">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background-color: #2ecc71;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h3>已完成</h3>
+                    <div class="card-value" id="completed-files">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background-color: #e67e22;">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="card-content">
+                    <h3>处理中</h3>
+                    <div class="card-value" id="processing-files">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文件列表表格 -->
+        <div class="data-table-container">
+            <table class="data-table" id="knowledge-table">
+                <thead>
+                    <tr>
+                        <th width="40"><input type="checkbox" id="select-all" title="全选"></th>
+                        <th>文件名</th>
+                        <th width="80">大小</th>
+                        <th width="100">状态</th>
+                        <th width="150">上传时间</th>
+                        <th width="150">最后更新</th>
+                        <th width="180">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="knowledge-table-body">
+                    <tr><td colspan="7" class="loading">正在加载文件数据...</td></tr>
+                </tbody>
+            </table>
+            <!-- 分页 -->
+            <div class="pagination" id="knowledge-pagination">
+                <button class="btn-pagination" id="prev-page" disabled><i class="fas fa-chevron-left"></i> 上一页</button>
+                <span class="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
+                <button class="btn-pagination" id="next-page" disabled>下一页 <i class="fas fa-chevron-right"></i></button>
+                <div class="page-size">
+                    <select id="page-size" class="form-select">
+                        <option value="10">每页10条</option>
+                        <option value="20">每页20条</option>
+                        <option value="50">每页50条</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 上传文件模态框 -->
+    <div class="modal" id="upload-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">上传知识文件</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="file-input" class="form-label required">选择文件（支持多选）</label>
+                        <input type="file" id="file-input" class="form-control" accept=".txt,.md,.docx,.xlsx,.pptx,.pdf" multiple required>
+                        <div class="form-hint">支持 .txt .md .docx .xlsx .pptx .pdf，可同时选择多个文件，单文件最大 30MB</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-description" class="form-label">描述（可选）</label>
+                        <textarea id="file-description" class="form-control" rows="2" placeholder="文件用途或备注"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">取消</button>
+                <button class="btn btn-primary" id="modal-upload">开始上传</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 JS -->
+    <script src="/frontend/js/utils.js"></script>
+    <script src="/frontend/js/components/navbar.js"></script>
+    <script src="/frontend/js/components/voice-input.js"></script>
+    <script src="/frontend/js/components/chat-widget.js"></script>
+    <script src="/frontend/js/pages/knowledge_feeding-api.js"></script>
+    <script src="/frontend/js/pages/knowledge_feeding.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化导航栏
+            const navbarContainer = document.getElementById('navbar-container');
+            if (navbarContainer && typeof Navbar !== 'undefined') {
+                Navbar.init(navbarContainer, 'knowledge-feeding'); // 需要在Navbar路由中注册
+            }
+
+            // 初始化知识投喂管理器
+            if (typeof KnowledgeFeedingManager !== 'undefined') {
+                KnowledgeFeedingManager.init();
+            } else {
+                console.error('KnowledgeFeedingManager 未定义！');
+            }
+        });
+    </script>
+</body>
+</html>

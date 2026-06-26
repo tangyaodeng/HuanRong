@@ -1,0 +1,575 @@
+# 复合特征计算配置
+database:
+  # 数据库连接配置
+  host: "192.168.5.43"            # 数据库主机地址
+  port: 3306                   # 数据库端口
+  username: "admin1"             # 用户名
+  password: "123456"         # 密码
+  database_name: "xm_hisdata"  # 数据库名
+  charset: "utf8mb4"          # 字符集
+
+composite_features:
+  # 主机总功率1计算
+  - name: "主机总功率1"                     # 复合特征名称
+    description: "主机总功率1 = 1#主机功率+2#主机功率+3#主机功率"  # 描述
+    output_table: "composite_total_host_meter_1"  # 计算结果存储表名
+    calculation_method: "add"    # 计算方法：add
+    input_features: # 输入特征配置
+      - feature_name: "1#主机功率"
+        table_name: "hrdz_zlz_ai354"  #
+        field_name: "PointValue"   # 数值字段名
+        timestamp_field: "UpdateDateTime"  # 时间戳字段名
+        weight: 1.0                # 权重（可选）
+#        is_numerator: true         # 是否是分子（用于除法）
+
+      - feature_name: "2#主机功率"
+        table_name: "hrdz_zlz_ai362"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+
+      - feature_name: "3#主机功率"
+        table_name: "hrdz_zlz_ai370"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    # 数据同步设置
+    sync:
+      enabled: true                    # 是否启用同步
+      interval_seconds: 300            # 同步间隔（秒），5分钟
+      batch_size: 1000                 # 每次同步处理的最大记录数
+      process_realtime: true           # 是否处理实时数据
+      historical_fill_enabled: true    # 启用历史数据补全
+      historical_start_date: "2025-01-01"  # 历史开始日期
+      # historical_end_date: "2026-12-31" # 可选：历史结束日期（不填则到当前时间）
+
+    # 计算参数
+    calculation_params:
+      precision: 4                     # 结果精度（小数位数）
+      allow_zero_denominator: false    # 是否允许分母为零
+      zero_denominator_value: null     # 分母为零时的默认值
+      min_value: 0                     # 最小值限制
+      max_value: 999999                   # 最大值限制
+
+  # 主机总功率2计算
+  - name: "主机总功率2"                     # 复合特征名称
+    description: "主机总功率2 = 4#主机功率+5#主机功率"  # 描述
+    output_table: "composite_total_host_meter_2"  # 计算结果存储表名
+    calculation_method: "add"    # 计算方法：add
+    input_features: # 输入特征配置
+      - feature_name: "4#主机功率"
+        table_name: "hrdz_zlz_ai378"  #
+        field_name: "PointValue"   # 数值字段名
+        timestamp_field: "UpdateDateTime"  # 时间戳字段名
+        weight: 1.0                # 权重（可选）
+      #        is_numerator: true         # 是否是分子（用于除法）
+
+      - feature_name: "5#主机功率"
+        table_name: "hrdz_zlz_ai386"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+
+    # 数据同步设置
+    sync:
+      enabled: true                    # 是否启用同步
+      interval_seconds: 300            # 同步间隔（秒），5分钟
+      batch_size: 1000                 # 每次同步处理的最大记录数
+      process_realtime: true           # 是否处理实时数据
+      historical_fill_enabled: true    # 启用历史数据补全
+      historical_start_date: "2025-01-01"  # 历史开始日期
+      # historical_end_date: "2026-12-31" # 可选：历史结束日期（不填则到当前时间）
+
+    # 计算参数
+    calculation_params:
+      precision: 4                     # 结果精度（小数位数）
+      allow_zero_denominator: false    # 是否允许分母为零
+      zero_denominator_value: null     # 分母为零时的默认值
+      min_value: 0                     # 最小值限制
+      max_value: 999999                   # 最大值限制
+  # 系统散热量1计算（直接由1/2/3号主机冷却侧冷量相加）
+  - name: "系统散热量1"
+    description: "系统散热量1 = 1号主机冷却侧冷量+2号主机冷却侧冷量+3号主机冷却侧冷量"
+    output_table: "composite_system_heat_dissipation_1"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "1号主机冷却侧冷量"
+        table_name: "hrdz_zlz_ai754"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+
+      - feature_name: "2号主机冷却侧冷量"
+        table_name: "hrdz_zlz_ai755"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+
+      - feature_name: "3号主机冷却侧冷量"
+        table_name: "hrdz_zlz_ai756"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      allow_zero_denominator: false
+      zero_denominator_value: null
+      min_value: 0
+      max_value: 100
+
+  # 系统散热量2计算（直接由4/5号主机冷却侧冷量相加）
+  - name: "系统散热量2"
+    description: "系统散热量2 = 4号主机冷却侧冷量+5号主机冷却侧冷量"
+    output_table: "composite_system_heat_dissipation_2"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "4号主机冷却侧冷量"
+        table_name: "hrdz_zlz_ai757"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+
+      - feature_name: "5号主机冷却侧冷量"
+        table_name: "hrdz_zlz_ai758"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      allow_zero_denominator: false
+      zero_denominator_value: null
+      min_value: 0
+      max_value: 100
+
+  # 冷却塔总功率（12个塔全部相加）
+  - name: "冷却塔总功率"
+    description: "冷却塔总功率 = 1~4号冷却塔配电柜电表实时功率之和"
+    output_table: "composite_total_cooling_tower_meter"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "冷却塔1号配电柜电表实时功率"
+        table_name: "hrdz_zlz_ai704"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "冷却塔2号配电柜电表实时功率"
+        table_name: "hrdz_zlz_ai712"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "冷却塔3号配电柜电表实时功率"
+        table_name: "hrdz_zlz_ai720"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "冷却塔4号配电柜电表实时功率"
+        table_name: "hrdz_zlz_ai728"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      min_value: 0
+      max_value: 999999
+
+  # 冷却泵总功率1（1-4号泵）
+  - name: "冷却泵总功率1"
+    description: "冷却泵总功率1 = 1#冷却泵+2#冷却泵+3#冷却泵+4#冷却泵"
+    output_table: "composite_total_cooling_pump_meter_1"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "1#冷却泵功率"
+        table_name: "hrdz_zlz_ai474"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "2#冷却泵功率"
+        table_name: "hrdz_zlz_ai482"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "3#冷却泵功率"
+        table_name: "hrdz_zlz_ai490"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "4#冷却泵功率"
+        table_name: "hrdz_zlz_ai498"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      min_value: 0
+      max_value: 999999
+
+  # 冷却泵总功率2（5-7号泵）
+  - name: "冷却泵总功率2"
+    description: "冷却泵总功率2 = 5#冷却泵+6#冷却泵+7#冷却泵"
+    output_table: "composite_total_cooling_pump_meter_2"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "5#冷却泵功率"
+        table_name: "hrdz_zlz_ai506"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "6#冷却泵功率"
+        table_name: "hrdz_zlz_ai514"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "7#冷却泵功率"
+        table_name: "hrdz_zlz_ai522"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      min_value: 0
+      max_value: 999999
+
+  # 冷冻泵总功率1（1-4号泵）
+  - name: "冷冻泵总功率1"
+    description: "冷冻泵总功率1 = 1#冷冻泵+2#冷冻泵+3#冷冻泵+4#冷冻泵"
+    output_table: "composite_total_chilled_pump_meter_1"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "1#冷冻泵功率"
+        table_name: "hrdz_zlz_ai394"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "2#冷冻泵功率"
+        table_name: "hrdz_zlz_ai402"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "3#冷冻泵功率"
+        table_name: "hrdz_zlz_ai410"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "4#冷冻泵功率"
+        table_name: "hrdz_zlz_ai418"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      min_value: 0
+      max_value: 999999
+
+  # 冷冻泵总功率2（5-7号泵）
+  - name: "冷冻泵总功率2"
+    description: "冷冻泵总功率2 = 5#冷冻泵+6#冷冻泵+7#冷冻泵"
+    output_table: "composite_total_chilled_pump_meter_2"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "5#冷冻泵功率"
+        table_name: "hrdz_zlz_ai426"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "6#冷冻泵功率"
+        table_name: "hrdz_zlz_ai434"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "7#冷冻泵功率"
+        table_name: "hrdz_zlz_ai442"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      min_value: 0
+      max_value: 999999
+
+  # 乙二醇泵总功率（3个泵）
+  - name: "乙二醇泵总功率"
+    description: "乙二醇泵总功率 = 1#乙二醇泵+2#乙二醇泵+3#乙二醇泵"
+    output_table: "composite_total_glycol_pump_meter"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "1#乙二醇泵功率"
+        table_name: "hrdz_zlz_ai450"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "2#乙二醇泵功率"
+        table_name: "hrdz_zlz_ai458"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "3#乙二醇泵功率"
+        table_name: "hrdz_zlz_ai466"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    sync:
+      enabled: true
+      interval_seconds: 300
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+    calculation_params:
+      precision: 4
+      min_value: 0
+      max_value: 999999
+
+  # 基载冷冻侧总管每小时冷量
+  - name: "基载冷冻侧总管每小时冷量"
+    description: "通过基载冷冻侧总管累计冷量整点差值计算每小时的冷量消耗"
+    output_table: "composite_hourly_cooling_energy_base"
+    calculation_method: "cumulative_diff"
+    input_features:
+      - feature_name: "累计冷量"
+        table_name: "hrdz_zlz_ai761"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+    calculation_params:
+      resample_rule: "1H"
+      diff_periods: 1
+      fill_method: "ffill"
+      nearest_window_minutes: 5
+      precision: 2
+      min_value: 0
+      max_value: 50000
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+
+  # 1号板换冷量每小时冷量
+  - name: "1号板换冷量"
+    description: "通过板1号板换冷量累计冷量整点差值计算每小时的冷量消耗"
+    output_table: "composite_hourly_cooling_energy_plate_1"
+    calculation_method: "cumulative_diff"
+    input_features:
+      - feature_name: "累计冷量"
+        table_name: "hrdz_zlz_ai759"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+    calculation_params:
+      resample_rule: "1H"
+      diff_periods: 1
+      fill_method: "ffill"
+      nearest_window_minutes: 5
+      precision: 2
+      min_value: 0
+      max_value: 50000
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+
+  # 2号板换冷量每小时冷量
+  - name: "2号板换冷量"
+    description: "通过板2号板换冷量累计冷量整点差值计算每小时的冷量消耗"
+    output_table: "composite_hourly_cooling_energy_plate_2"
+    calculation_method: "cumulative_diff"
+    input_features:
+      - feature_name: "累计冷量"
+        table_name: "hrdz_zlz_ai760"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+    calculation_params:
+      resample_rule: "1H"
+      diff_periods: 1
+      fill_method: "ffill"
+      nearest_window_minutes: 5
+      precision: 2
+      min_value: 0
+      max_value: 50000
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+
+  # 总每小时用冷量（基载总管 + 板换二次总管）
+  - name: "总每小时用冷量"
+    description: "总每小时用冷量 = 基载冷冻侧总管每小时冷量 + 1号板每小时冷量 + 2号板每小时冷量"
+    output_table: "composite_hourly_cooling_energy_total"
+    calculation_method: "add"
+    input_features:
+      - feature_name: "基载冷冻侧总管每小时冷量"
+        table_name: "composite_hourly_cooling_energy_base"   # 引用上一步输出表
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "1号板每小时冷量"
+        table_name: "composite_hourly_cooling_energy_plate_1"   # 引用上一步输出表
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+      - feature_name: "2号板每小时冷量"
+        table_name: "composite_hourly_cooling_energy_plate_2"   # 引用上一步输出表
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+        weight: 1.0
+    calculation_params:
+      precision: 2
+      min_value: 0
+      max_value: 100000       # 适当加大，因为是两个合计
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"# 每小时用冷量（基于累计冷量差分）
+
+  # ---------- 基于小时数据的聚合 ----------
+  # 日负荷冷量总量
+  - name: "日负荷冷量总量"
+    description: "由总每小时用冷量按天求和得到"
+    output_table: "composite_daily_cooling_energy_total"
+    calculation_method: "time_aggregation"
+    input_features:
+      - feature_name: "总每小时用冷量"
+        table_name: "composite_hourly_cooling_energy_total"   # 你的小时表
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+    calculation_params:
+      resample_rule: "1D"         # 天聚合
+      aggregation_func: "sum"
+      precision: 2
+      min_value: 0
+      max_value: 1000000
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+
+  # 周负荷冷量总量（自然周，周一为起始）
+  - name: "周负荷冷量总量"
+    description: "由总每小时用冷量按周求和得到（周一 ~ 周日）"
+    output_table: "composite_weekly_cooling_energy_total"
+    calculation_method: "time_aggregation"
+    input_features:
+      - feature_name: "总每小时用冷量"
+        table_name: "composite_hourly_cooling_energy_total"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+    calculation_params:
+      resample_rule: "1W-MON"     # 周聚合，以周一为每周第一天
+      aggregation_func: "sum"
+      precision: 2
+      min_value: 0
+      max_value: 10000000
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+
+  # 月负荷冷量总量（自然月）
+  - name: "月负荷冷量总量"
+    description: "由总每小时用冷量按月求和得到"
+    output_table: "composite_monthly_cooling_energy_total"
+    calculation_method: "time_aggregation"
+    input_features:
+      - feature_name: "总每小时用冷量"
+        table_name: "composite_hourly_cooling_energy_total"
+        field_name: "PointValue"
+        timestamp_field: "UpdateDateTime"
+    calculation_params:
+      resample_rule: "1M"         # 月聚合
+      aggregation_func: "sum"
+      precision: 2
+      min_value: 0
+      max_value: 50000000
+    sync:
+      enabled: true
+      interval_seconds: 3600
+      batch_size: 1000
+      process_realtime: true
+      historical_fill_enabled: true
+      historical_start_date: "2025-01-01"
+
+
+# 全局同步设置
+global_sync:
+  enabled: true
+  check_interval_seconds: 60  # 检查间隔（秒）
+  max_concurrent_tasks: 5     # 最大并发任务数
+  retry_count: 3              # 失败重试次数
+  retry_delay_seconds: 10     # 重试延迟
+
+# 日志配置
+logging:
+  level: "INFO"               # 日志级别：DEBUG, INFO, WARNING, ERROR
+  file_path: "composite_feature.log"  # 日志文件路径
+  max_size_mb: 10             # 日志文件最大大小（MB）
+  backup_count: 5             # 备份文件数量
+
+# 监控配置
+monitoring:
+  enabled: true
+  metrics_port: 9090          # 监控指标端口
+  push_interval_seconds: 60   # 指标推送间隔

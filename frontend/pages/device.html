@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备管理 - 智慧暖通AI预测系统</title>
+    <!-- 修正CSS路径：从根目录开始 -->
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+    <link rel="stylesheet" href="/frontend/css/notification.css">
+    <link rel="stylesheet" href="/frontend/css/fixes.css">
+    <link rel="stylesheet" href="/frontend/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 主要内容区 -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-server"></i> 设备管理</h1>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="add-device-btn">
+                    <i class="fas fa-plus"></i> 添加设备
+                </button>
+                <button class="btn btn-secondary" id="batch-operate-btn">
+                    <i class="fas fa-tasks"></i> 批量操作
+                </button>
+            </div>
+        </div>
+
+        <!-- 筛选工具栏 -->
+        <div class="filter-toolbar">
+            <div class="filter-group">
+                <label for="project-filter">项目筛选:</label>
+                <select id="project-filter" class="form-select">
+                    <option value="">全部项目</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="model-filter">设备模型:</label>
+                <select id="model-filter" class="form-select">
+                    <option value="">全部模型</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="status-filter">状态:</label>
+                <select id="status-filter" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="active">运行中</option>
+                    <option value="inactive">已停止</option>
+                </select>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="filter-group">
+                <label for="search-input">搜索:</label>
+                <input type="text" id="search-input" class="form-control" placeholder="设备名称、标识符...">
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn btn-secondary" id="reset-filters">
+                    <i class="fas fa-redo"></i> 重置
+                </button>
+                <button class="btn btn-primary" id="apply-filters">
+                    <i class="fas fa-filter"></i> 筛选
+                </button>
+            </div>
+        </div>
+
+        <!-- 设备表格 -->
+        <div class="data-table-container">
+            <table class="data-table" id="device-table">
+                <thead>
+                    <tr>
+                        <th width="40">
+                            <input type="checkbox" id="select-all">
+                        </th>
+                        <th>设备id</th>
+                        <th>设备名称</th>
+                        <th>设备标识符</th>
+                        <th>设备模型</th>
+                        <th>模型版本</th>
+                        <th>所属项目</th>
+                        <th>状态</th>
+                        <th>位置</th>
+                        <th>更新时间</th>
+                        <th width="120">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="device-table-body">
+                    <tr>
+                        <td colspan="11" class="loading">正在加载设备数据...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="pagination" id="device-pagination">
+                <button class="btn-pagination" id="prev-page" disabled>
+                    <i class="fas fa-chevron-left"></i> 上一页
+                </button>
+                <span class="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
+                <button class="btn-pagination" id="next-page" disabled>
+                    下一页 <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="page-size">
+                    <select id="page-size" class="form-select">
+                        <option value="10">每页10条</option>
+                        <option value="20">每页20条</option>
+                        <option value="50">每页50条</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 设备详情弹窗 -->
+    <div class="modal" id="device-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">添加设备</h2>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs" id="device-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-link active" data-tab="basic">基础信息</button>
+                        <button class="tab-link" data-tab="features">特征详情</button>
+                    </div>
+
+                    <!-- 基础信息标签页 -->
+                    <div class="tab-content active" id="tab-basic">
+                        <form id="device-form">
+                            <div class="form-group">
+                                <label for="device-name" class="form-label required">设备名称</label>
+                                <input type="text" id="device-name" class="form-control" required>
+                                <div class="form-hint">请输入设备唯一名称</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-identifier" class="form-label required">设备标识符</label>
+                                <input type="text" id="device-identifier" class="form-control" required>
+                                <div class="form-hint">项目内唯一的设备标识符，如：DEVICE_001</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-model" class="form-label required">设备模型</label>
+                                <select id="device-model" class="form-select" required>
+                                    <option value="">请选择设备模型</option>
+                                    <option value="motor">电机</option>
+                                    <option value="pump">水泵</option>
+                                    <option value="compressor">压缩机</option>
+                                    <option value="fan">风机</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-model-version" class="form-label required">模型版本</label>
+                                <select id="device-model-version" class="form-select" required>
+                                    <option value="">请选择模型版本</option>
+                                    <option value="v1.0">v1.0</option>
+                                    <option value="v1.1">v1.1</option>
+                                    <option value="v2.0">v2.0</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-project" class="form-label required">所属项目</label>
+                                <select id="device-project" class="form-select" required>
+                                    <option value="">请选择项目</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-status" class="form-label">设备状态</label>
+                                <select id="device-status" class="form-select">
+                                    <option value="active">运行中</option>
+                                    <option value="inactive">已停止</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-location" class="form-label">位置/区域</label>
+                                <input type="text" id="device-location" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device-description" class="form-label">设备描述</label>
+                                <textarea id="device-description" class="form-control" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                <!-- 特征详情标签页 -->
+<!-- 特征详情标签页 -->
+<div class="tab-content" id="tab-features">
+    <div class="feature-detail-info">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <h4>特征详情</h4>
+                <p>显示设备模型版本关联的特征配置。</p>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">设备模型：</span>
+                        <span id="current-device-model" class="info-value">未选择</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">模型版本：</span>
+                        <span id="current-model-version" class="info-value">默认</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 特征列表容器 -->
+        <div class="feature-list-container" id="feature-list-container">
+            <div class="loading">正在加载特征数据...</div>
+        </div>
+    </div>
+</div>            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">取消</button>
+                <button class="btn btn-primary" id="modal-save">保存设备</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量操作弹窗 -->
+    <div class="modal" id="batch-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">批量操作</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="batch-info">
+                    <p>已选择 <span id="selected-count">0</span> 个设备</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="batch-action" class="form-label">选择操作</label>
+                    <select id="batch-action" class="form-select">
+                        <option value="">请选择操作...</option>
+                        <option value="enable">启用设备</option>
+                        <option value="disable">禁用设备</option>
+                        <option value="change-project">变更项目</option>
+                        <option value="change-model">变更设备模型</option>
+                        <option value="delete">删除设备</option>
+                    </select>
+                </div>
+
+                <!-- 动态操作表单 -->
+                <div id="batch-action-form" style="display: none;">
+                    <!-- 这里会根据选择的操作动态显示不同的表单 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="batch-cancel">取消</button>
+                <button class="btn btn-primary" id="batch-confirm" disabled>确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/frontend/js/utils.js"></script>
+    <script src="/frontend/js/components/navbar.js"></script>
+
+    <!-- 关键修复：先加载API，再加载页面逻辑 -->
+    <script src="/frontend/js/pages/device-api.js"></script>
+    <script src="/frontend/js/pages/device.js"></script>
+
+    <script>
+        // 等待所有资源加载完成
+        window.addEventListener('load', function() {
+            console.log('✅ 页面完全加载完成');
+
+            // 初始化导航栏
+            const navbarContainer = document.getElementById('navbar-container');
+            if (navbarContainer && typeof Navbar !== 'undefined') {
+                Navbar.init(navbarContainer, 'devices');
+            }
+
+            // 检查API是否已定义
+            if (typeof API === 'undefined') {
+                console.error('❌ API未定义，请检查device-api.js是否正确加载');
+                alert('API模块加载失败，请刷新页面或检查控制台错误');
+                return;
+            }
+
+            console.log('✅ API已定义，可以开始初始化设备管理');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+1. 查询模式图表：设备总功率优化趋势
+图表说明：折线图展示“当前设备总功率”与“优化总功率”随时间变化趋势。
+数据来源表：cooling_opt_parameters_total
+图表系列	对应表字段	字段类型	说明
+当前设备总功率	current_total_power	DECIMAL(8,2)	优化前的实际总功率（kW）
+优化总功率	optimized_total_power	DECIMAL(8,2)	优化建议的总功率（kW）
+X轴（时间）	updated_at 或 optimization_timestamp	TIMESTAMP	记录更新时间或优化时间戳
+查询参数：start_date, end_date, limit
+
+2. 寻优模式图表：迭代寻优过程
+图表说明：展示最近一次优化迭代中所有温度‑功率组合下的总功率、主机功率、冷却塔功率、冷却泵功率分布。
+数据来源：Redis 缓存（非数据库表）
+Redis Key	数据结构	说明
+HuanRong:cooling_opt:latest_iteration	JSON	由调度器 CoolingTempSchedulerTotal 在每次优化后写入
+字段说明：
+字段	类型	说明
+index	int	按总功率降序的排名（1为最优）
+cooling_inlet_temp	float	冷却水供水温度（℃）
+cooling_return_temp	float	冷却水回水温度（℃）
+delta_temp	float	供回水温差（℃）
+host_power	float	主机总功率（kW）
+cooling_pump_power	float	冷却泵总功率（kW）
+cooling_tower_power	float	冷却塔总功率（kW）
+total_power	float	设备总功率（kW）
+power_diff	float	相比当前值的功率变化（负为节能）
+power_diff_percent	float	功率变化百分比（负为节能）
+
+3. 右侧“参数优化”对比区域
+数据来源表：cooling_opt_parameters_total（最新一条记录）
+3.1 温度与散热量参数
+显示名称	当前值字段	优化值字段	差值字段	单位
+冷却水供水温度	current_supply_temp	optimized_supply_temp	diff_supply_temp	℃
+冷却水回水温度	current_return_temp	optimized_return_temp	diff_return_temp	℃
+冷却水温差	current_temp_diff	optimized_temp_diff	diff_temp_diff	℃
+散热量	current_heat_dissipation	optimized_heat_dissipation	diff_heat_dissipation	%
+3.2 节能控制（功率参数）
+显示名称	当前值字段	优化值字段	差值字段	百分比字段	单位
+设备总功率	current_total_power	optimized_total_power	diff_total_power	percent_total_power	kW
+主机总功率	current_host_total_power	optimized_host_total_power	diff_host_total_power	percent_host_total_power	kW
+冷却塔总功率	current_cooling_tower_total_power	optimized_cooling_tower_total_power	diff_cooling_tower_total_power	percent_cooling_tower_total_power	kW
+冷却泵总功率	current_cooling_pump_total_power	optimized_cooling_pump_total_power	diff_cooling_pump_total_power	percent_cooling_pump_total_power	kW
+3.3 节能汇总与更新时间
+显示名称	对应表字段	说明
+预计总节能	total_energy_saving	节能功率（kW，正值表示节能）
+节能比例	energy_saving_percent	节能百分比（%）
+更新时间	updated_at	最后更新时间
+3.4 下发状态（优化状态弹窗）
+显示名称	对应表字段	说明
+回水温度优化可下发	optimized_return_temp_applied	BOOLEAN，是否满足下发条件
+温差优化可下发	optimized_temp_diff_applied	BOOLEAN，是否满足下发条件
+下发失败原因	failure_reasons	TEXT，多条用分号分隔
+
+4. 历史数据查询弹窗
+数据来源表：cooling_opt_parameters_total
+查询字段标识	当前值字段	优化值字段	单位
+total_power	current_total_power	optimized_total_power	kW
+host_total_power	current_host_total_power	optimized_host_total_power	kW
+cooling_tower_total_power	current_cooling_tower_total_power	optimized_cooling_tower_total_power	kW
+cooling_pump_total_power	current_cooling_pump_total_power	optimized_cooling_pump_total_power	kW
+supply_temp	current_supply_temp	optimized_supply_temp	℃
+return_temp	current_return_temp	optimized_return_temp	℃
+temp_diff	current_temp_diff	optimized_temp_diff	℃
+heat_dissipation	current_heat_dissipation	optimized_heat_dissipation	%
+返回结构：{ timestamp, current_value, optimized_value }，其中 timestamp 取自 optimization_timestamp。
+
+
+

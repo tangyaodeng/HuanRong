@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧能源管理平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, -apple-system, sans-serif;
+            background: #0a1628;
+        }
+
+        /* ===== 背景层 ===== */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 60% at 50% 40%, rgba(8, 68, 160, 0.35) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 50% at 20% 80%, rgba(0, 120, 210, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 50% at 80% 20%, rgba(0, 160, 240, 0.12) 0%, transparent 60%),
+                linear-gradient(180deg, #0a1628 0%, #0d1f3c 30%, #0f2447 60%, #0a1628 100%);
+        }
+
+        /* 顶部光晕 */
+        .bg-layer::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1200px;
+            height: 800px;
+            background: radial-gradient(ellipse, rgba(0, 140, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Canvas 背景 */
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ===== 主容器 ===== */
+        .page-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 左侧品牌区 */
+        .brand-area {
+            position: absolute;
+            left: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            max-width: 480px;
+        }
+
+        .brand-tagline {
+            font-size: 14px;
+            letter-spacing: 6px;
+            color: rgba(0, 180, 255, 0.7);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .brand-title {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #e0f0ff 0%, #6cb4ee 50%, #a0d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            font-size: 16px;
+            color: rgba(200, 220, 240, 0.6);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .brand-line {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #0088ff, transparent);
+            margin-bottom: 24px;
+        }
+
+        /* ===== 登录卡片 ===== */
+        .login-card {
+            position: absolute;
+            right: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 400px;
+            padding: 48px 40px 40px;
+            background: rgba(10, 25, 50, 0.75);
+            border: 1px solid rgba(0, 140, 255, 0.18);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow:
+                0 0 60px rgba(0, 100, 200, 0.08),
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .login-card:hover {
+            border-color: rgba(0, 150, 255, 0.35);
+            box-shadow:
+                0 0 80px rgba(0, 100, 200, 0.12),
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        /* 卡片顶部装饰线 */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 40px;
+            right: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 150, 255, 0.4), transparent);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .login-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, rgba(0, 120, 210, 0.2), rgba(0, 180, 255, 0.1));
+            border: 1px solid rgba(0, 150, 255, 0.3);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .login-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #d0e4f5;
+            letter-spacing: 2px;
+        }
+
+        .login-desc {
+            font-size: 12px;
+            color: rgba(140, 180, 220, 0.5);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== 表单 ===== */
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: rgba(140, 180, 220, 0.6);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            font-weight: 400;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(0, 160, 255, 0.4);
+            font-size: 16px;
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 14px 13px 44px;
+            background: rgba(0, 30, 60, 0.5);
+            border: 1px solid rgba(0, 120, 200, 0.2);
+            border-radius: 8px;
+            color: #d0e4f5;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input::placeholder {
+            color: rgba(120, 160, 200, 0.35);
+            font-size: 13px;
+        }
+
+        .form-input:focus {
+            border-color: rgba(0, 150, 255, 0.55);
+            background: rgba(0, 40, 80, 0.55);
+            box-shadow:
+                0 0 20px rgba(0, 120, 255, 0.08),
+                inset 0 0 20px rgba(0, 100, 200, 0.04);
+        }
+
+        .form-input:focus + .input-icon,
+        .input-wrapper:focus-within .input-icon {
+            color: rgba(0, 180, 255, 0.7);
+        }
+
+        /* 错误状态 */
+        .form-input.error {
+            border-color: rgba(255, 80, 80, 0.5);
+            box-shadow: 0 0 16px rgba(255, 50, 50, 0.08);
+        }
+
+        .form-error {
+            font-size: 11px;
+            color: rgba(255, 100, 100, 0.8);
+            margin-top: 6px;
+            min-height: 16px;
+            letter-spacing: 0.5px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ===== 登录按钮 ===== */
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #0055aa 0%, #0077cc 50%, #0055aa 100%);
+            border: 1px solid rgba(0, 150, 255, 0.4);
+            border-radius: 8px;
+            color: #e0f0ff;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #0066bb 0%, #0088dd 50%, #0066bb 100%);
+            border-color: rgba(0, 180, 255, 0.6);
+            box-shadow:
+                0 0 30px rgba(0, 120, 255, 0.25),
+                0 8px 24px rgba(0, 80, 160, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 0 16px rgba(0, 100, 255, 0.2);
+            transition: all 0.1s ease;
+        }
+
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* 加载动画 */
+        .login-btn.loading {
+            pointer-events: none;
+            color: transparent;
+        }
+
+        .login-btn.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* 底部提示 */
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 11px;
+            color: rgba(120, 160, 200, 0.35);
+            letter-spacing: 1px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1200px) {
+            .brand-area {
+                display: none;
+            }
+            .login-card {
+                right: 50%;
+                transform: translate(50%, -50%);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .login-card {
+                width: 90vw;
+                padding: 36px 28px 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景层 -->
+    <div class="bg-layer"></div>
+
+    <!-- Canvas 动态背景：鼠标联动粒子网络 -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- 主内容 -->
+    <div class="page-wrapper">
+        <!-- 左侧品牌区 -->
+        <div class="brand-area">
+            <div class="brand-tagline">Intelligent Energy Management</div>
+            <div class="brand-line"></div>
+            <div class="brand-title">智慧能源<br>管理平台</div>
+            <div class="brand-subtitle">
+                基于AI驱动的暖通系统优化<br>
+                实时监控 · 智能预测 · 节能降耗
+            </div>
+        </div>
+
+        <!-- 登录卡片 -->
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,180,255,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="login-title">账号登录</div>
+                <div class="login-desc">欢迎使用智慧能源管理平台</div>
+            </div>
+
+            <form id="loginForm" autocomplete="off">
+                <!-- 账号 -->
+                <div class="form-group">
+                    <label>账号</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <input type="text" class="form-input" id="username" placeholder="请输入账号" autocomplete="off">
+                    </div>
+                    <div class="form-error" id="usernameError"></div>
+                </div>
+
+                <!-- 密码 -->
+                <div class="form-group">
+                    <label>密码</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" class="form-input" id="password" placeholder="请输入密码" autocomplete="new-password">
+                    </div>
+                    <div class="form-error" id="passwordError"></div>
+                </div>
+
+                <!-- 按钮 -->
+                <button type="submit" class="login-btn" id="loginBtn">登 录</button>
+            </form>
+
+            <div class="login-footer">
+                &copy; 2024 智慧能源管理平台 · Power by HuanRong
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Canvas 鼠标联动粒子网络 ===== -->
+    <script>
+        (function() {
+            var canvas = document.getElementById('bgCanvas');
+            var ctx = canvas.getContext('2d');
+            var w, h, particles = [];
+            var mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
+            var MAX_PARTICLES = 80;
+            var MAX_CONNECT_DIST = 150;
+            var MOUSE_RADIUS = 200;
+
+            function resize() {
+                w = canvas.width  = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+
+            function rand(min, max) { return Math.random() * (max - min) + min; }
+
+            function createParticle() {
+                return {
+                    x: rand(0, w),
+                    y: rand(0, h),
+                    vx: rand(-0.25, 0.25),
+                    vy: rand(-0.25, 0.25),
+                    r: rand(1.5, 3.5),
+                    baseAlpha: rand(0.25, 0.55),
+                    phase: rand(0, Math.PI * 2)
+                };
+            }
+
+            function init() {
+                particles = [];
+                for (var i = 0; i < MAX_PARTICLES; i++) particles.push(createParticle());
+            }
+
+            // ===== 鼠标事件（绑定在 document 上，登录卡上方也能感知） =====
+            document.addEventListener('mousemove', function(e) {
+                mouse.tx = e.clientX;
+                mouse.ty = e.clientY;
+            });
+            document.addEventListener('mouseleave', function() {
+                mouse.tx = -9999;
+                mouse.ty = -9999;
+            });
+
+            function drawParticle(p) {
+                // 与鼠标的距离因子
+                var mdx = p.x - mouse.x;
+                var mdy = p.y - mouse.y;
+                var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+                var mouseFactor = mdist < MOUSE_RADIUS ? Math.pow(1 - mdist / MOUSE_RADIUS, 2) : 0;
+
+                // 靠近鼠标：放大 + 变亮
+                var r = p.r * (1 + mouseFactor * 3);
+                var alpha = p.baseAlpha + mouseFactor * 0.4;
+
+                // 外发光
+                var glowR = r * 5 * (1 + mouseFactor * 2);
+                var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
+                glow.addColorStop(0, 'rgba(0,200,255,' + (alpha * 0.35 + mouseFactor * 0.3) + ')');
+                glow.addColorStop(0.4, 'rgba(0,140,230,' + (alpha * 0.1 + mouseFactor * 0.15) + ')');
+                glow.addColorStop(1, 'rgba(0,60,180,0)');
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
+                ctx.fillStyle = glow;
+                ctx.fill();
+
+                // 核心
+                var coreColor = mouseFactor > 0.3
+                    ? 'rgba(200,245,255,' + Math.min(1, alpha * 1.4) + ')'
+                    : 'rgba(120,210,255,' + alpha + ')';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = coreColor;
+                ctx.fill();
+            }
+
+            function drawConnection(a, b, mouseFactor) {
+                var dx = b.x - a.x;
+                var dy = b.y - a.y;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > MAX_CONNECT_DIST) return;
+
+                // 基础透明度
+                var baseAlpha = 0.06 * (1 - dist / MAX_CONNECT_DIST);
+                // 鼠标靠近时连线更亮
+                var alpha = baseAlpha + mouseFactor * 0.25;
+                if (alpha < 0.015) return;
+
+                var lineWidth = 0.5 + mouseFactor * 1.5;
+
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.strokeStyle = 'rgba(0,170,255,' + alpha + ')';
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+
+                // 鼠标平滑缓动
+                mouse.x += (mouse.tx - mouse.x) * 0.08;
+                mouse.y += (mouse.ty - mouse.y) * 0.08;
+
+                var mouseOnScreen = mouse.tx > 0 && mouse.ty > 0;
+
+                // 更新粒子位置
+                for (var i = 0; i < particles.length; i++) {
+                    var p = particles[i];
+
+                    // 基础漂移
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // 鼠标吸引力（微弱）
+                    if (mouseOnScreen) {
+                        var dx = mouse.x - p.x;
+                        var dy = mouse.y - p.y;
+                        var dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < MOUSE_RADIUS && dist > 0) {
+                            var force = (1 - dist / MOUSE_RADIUS) * 0.04;
+                            p.vx += (dx / dist) * force;
+                            p.vy += (dy / dist) * force;
+                        }
+                    }
+
+                    // 速度阻尼
+                    p.vx *= 0.999;
+                    p.vy *= 0.999;
+                    var speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                    if (speed > 0.5) { p.vx *= 0.5 / speed; p.vy *= 0.5 / speed; }
+                    if (speed < 0.1) {
+                        p.vx += rand(-0.04, 0.04);
+                        p.vy += rand(-0.04, 0.04);
+                    }
+
+                    // 边界反弹（柔和）
+                    if (p.x < -20) p.x = w + 20;
+                    if (p.x > w + 20) p.x = -20;
+                    if (p.y < -20) p.y = h + 20;
+                    if (p.y > h + 20) p.y = -20;
+                }
+
+                // 先画连线（在粒子下层）
+                for (var i = 0; i < particles.length; i++) {
+                    for (var j = i + 1; j < particles.length; j++) {
+                        var a = particles[i], b = particles[j];
+                        // 计算两个粒子分别离鼠标的距离
+                        var mda = Math.sqrt(Math.pow(a.x - mouse.x, 2) + Math.pow(a.y - mouse.y, 2));
+                        var mdb = Math.sqrt(Math.pow(b.x - mouse.x, 2) + Math.pow(b.y - mouse.y, 2));
+                        var mouseFactor = mouseOnScreen
+                            ? Math.max(0, 1 - Math.min(mda, mdb) / MOUSE_RADIUS)
+                            : 0;
+                        drawConnection(a, b, mouseFactor);
+                    }
+                }
+
+                // 再画粒子（在上层）
+                for (var i = 0; i < particles.length; i++) {
+                    drawParticle(particles[i]);
+                }
+
+                // ===== 鼠标光环 =====
+                if (mouseOnScreen) {
+                    var ringGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 80);
+                    ringGrad.addColorStop(0, 'rgba(0,180,255,0.08)');
+                    ringGrad.addColorStop(0.5, 'rgba(0,140,255,0.03)');
+                    ringGrad.addColorStop(1, 'rgba(0,80,200,0)');
+                    ctx.beginPath();
+                    ctx.arc(mouse.x, mouse.y, 80, 0, Math.PI * 2);
+                    ctx.fillStyle = ringGrad;
+                    ctx.fill();
+
+                    // 细环
+                    ctx.beginPath();
+                    ctx.arc(mouse.x, mouse.y, 60, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(0,180,255,0.12)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', function() {
+                resize();
+                init();
+            });
+
+            resize();
+            init();
+            animate();
+        })();
+    </script>
+
+    <script>
+        (function() {
+            var form   = document.getElementById('loginForm');
+            var btn    = document.getElementById('loginBtn');
+            var usernameEl = document.getElementById('username');
+            var passwordEl = document.getElementById('password');
+            var usernameErr = document.getElementById('usernameError');
+            var passwordErr = document.getElementById('passwordError');
+
+            function clearErrors() {
+                usernameErr.textContent = '';
+                passwordErr.textContent = '';
+                usernameEl.classList.remove('error');
+                passwordEl.classList.remove('error');
+            }
+
+            function setLoading(isLoading) {
+                if (isLoading) {
+                    btn.classList.add('loading');
+                    btn.disabled = true;
+                } else {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                clearErrors();
+
+                var username = usernameEl.value.trim();
+                var password = passwordEl.value.trim();
+                var valid = true;
+
+                if (!username) {
+                    usernameErr.textContent = '请输入账号';
+                    usernameEl.classList.add('error');
+                    valid = false;
+                }
+
+                if (!password) {
+                    passwordErr.textContent = '请输入密码';
+                    passwordEl.classList.add('error');
+                    valid = false;
+                }
+
+                if (!valid) return;
+
+                setLoading(true);
+
+                // 模拟登录请求（替换为实际的 API 地址）
+                setTimeout(function() {
+                    // ----- 实际使用时替换为真实 API 调用 -----
+                    // fetch('/api/v1/auth/login', {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({ username: username, password: password })
+                    // }).then(res => res.json()).then(data => {
+                    //     if (data.success) {
+                    //         window.location.href = data.redirect || '/';
+                    //     } else {
+                    //         passwordErr.textContent = data.message || '账号或密码错误';
+                    //         passwordEl.classList.add('error');
+                    //     }
+                    // }).catch(err => {
+                    //     passwordErr.textContent = '网络错误，请稍后重试';
+                    //     passwordEl.classList.add('error');
+                    // }).finally(() => setLoading(false));
+
+                    // 当前为演示模式，直接跳转
+                    console.log('登录信息 → 账号:', username, '密码:', password);
+                    setLoading(false);
+
+                    // 演示：登录成功提示
+                    passwordErr.textContent = '';
+                    passwordErr.style.color = 'rgba(0,200,120,0.8)';
+                    passwordErr.textContent = '登录成功，正在跳转...';
+                    passwordErr.style.color = '';
+
+                    setTimeout(function() {
+                        window.location.href = 'monitoring.html';
+                    }, 800);
+                }, 1200);
+            });
+
+            // 回车键提交
+            usernameEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); passwordEl.focus(); }
+            });
+            passwordEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); form.dispatchEvent(new Event('submit')); }
+            });
+
+            // 输入时清除错误
+            usernameEl.addEventListener('input', function() {
+                usernameEl.classList.remove('error');
+                usernameErr.textContent = '';
+            });
+            passwordEl.addEventListener('input', function() {
+                passwordEl.classList.remove('error');
+                passwordErr.textContent = '';
+            });
+        })();
+    </script>
+
+</body>
+</html>

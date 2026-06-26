@@ -1,0 +1,19 @@
+pip install jieba
+# ========== 语音识别模型下载（电脑A有外网执行）==========
+# 1. 下载 openai-whisper 依赖包
+pip download openai-whisper -d ./whisper-packages
+# 2. 安装并下载 tiny 模型（~40MB）
+pip install openai-whisper
+python -c "import whisper; whisper.load_model('base', download_root='./whisper-model-base')"
+# 3. whisper-packages + whisper-model → U盘拷到 B
+# 4. B 上安装：pip install --no-index --find-links=./whisper-packages openai-whisper
+# 5. B 上放模型：whisper-model 整个文件夹放到 C:\Users\Administrator\.cache\whisper\
+
+# ========== 局域网语音输入配置 ==========
+# 1. B电脑：CMD 执行 ipconfig 查看局域网 IPv4 地址
+# 2. 修改 frontend/js/components/chat-widget.js 第6行，localhost 改为 B 的 IP http://192.168.5.240:8000
+# 3. 局域网其他电脑 Chrome 打开 chrome://flags/#unsafely-treat-insecure-origin-as-secure
+#    添加 http://B的IP:8000，改为 Enabled，重启浏览器
+在 Edge 地址栏输入 edge://flags 并回车。
+在页面顶部的搜索框中输入 unsafely-treat-insecure-origin-as-secure（也可以搜 Insecure origins treated as secure）。
+找到 “Insecure origins treated as secure” 这一项，将其右侧下拉框从 Default 改为 Enabled。

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置管理 - 智慧暖通AI预测系统</title>
+
+    <!-- 样式 -->
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+    <!-- 图标库 -->
+    <link rel="stylesheet" href="/frontend/css/all.min.css">
+
+    <style>
+        .status-feature-section,.output-feature-section{
+        height:600px;
+        overflow-y:auto;
+        }
+        .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: linear-gradient(135deg, #4CAF50, #66BB6A);
+        color: white;
+        border-radius: 12px;
+        font-size: 11px;
+        margin-left: 8px;
+        font-weight: 500;
+    }
+
+    .status-badge i {
+        margin-right: 4px;
+    }
+
+    .status-feature-section {
+        border: 1px solid #e0e0e0;
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+        /* 自定义样式增强 */
+        .model-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .model-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .model-card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .model-card-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .model-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        /* 在已有的style标签中添加 */
+        .validation-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #6c757d;
+        }
+
+        .validation-error {
+            font-size: 12px;
+            color: #dc3545;
+            margin-top: 4px;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #dc3545;
+        }
+
+        .validation-error i {
+            margin-right: 4px;
+        }
+
+        .validation-hint i {
+            margin-right: 4px;
+            color: #6c757d;
+        }
+
+        /* 输入框验证状态 */
+        .form-control.invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .form-control.valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .predefined-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 8px;
+        }
+
+        .active-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .inactive-badge {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* 添加到现有CSS中 */
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .feature-item.selected {
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+
+        .feature-order {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .feature-info {
+            flex: 1;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feature-details {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .feature-code {
+            color: #6c757d;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .feature-badge {
+            padding: 2px 6px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        .feature-unit {
+            color: #28a745;
+            font-size: 12px;
+        }
+
+        .feature-description {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .required-badge {
+            padding: 2px 6px;
+            background: #dc3545;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .feature-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-move-up,
+        .btn-move-down {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-move-up:disabled,
+        .btn-move-down:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-remove {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #adb5bd;
+            margin-bottom: 16px;
+        }
+
+        .empty-message {
+            margin: 10px 0;
+        }
+
+        /* 内层标签页样式 */
+        .inner-tabs {
+            width: 100%;
+        }
+
+        .inner-tab-nav {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .inner-tab-link {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            color: #6c757d;
+            transition: all 0.3s;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .inner-tab-link:hover {
+            color: #007bff;
+        }
+
+        .inner-tab-link.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            font-weight: 600;
+        }
+
+        .inner-tab-content {
+            display: none;
+        }
+
+        .inner-tab-content.active {
+            display: block;
+        }
+
+        /* 输出特征标记样式 */
+        .output-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .output-badge i {
+            margin-right: 4px;
+        }
+
+        /* 输出特征选择器样式 */
+        .output-feature-section {
+            border: 1px solid #e0e0e0;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .output-feature-option {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+
+        .output-feature-option:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+        }
+
+        .output-feature-option .radio {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .output-feature-option .radio input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .output-feature-option .radio-label {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .output-feature-option .radio-label strong {
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .output-feature-option .radio-label code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .output-feature-option .radio-label em {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* 选中状态的样式 */
+        .output-feature-option input[type="radio"]:checked ~ .radio-label {
+            color: #007bff;
+        }
+
+        .output-feature-option input[type="radio"]:checked ~ .radio-label strong {
+            color: #007bff;
+        }
+
+        /* 特征选择器容器 */
+        .feature-selection-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-direction: column;
+        }
+
+        .feature-selector {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+        }
+
+        .feature-selector h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature-search {
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        /* 主输出特征标记样式 */
+.primary-output-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #FF9800, #FFB74D);
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.primary-output-badge i {
+    margin-right: 4px;
+}
+
+/* 主输出特征选择器样式 */
+.primary-output-option {
+    padding: 10px;
+    margin: 5px 0;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #FFE0B2;
+    transition: all 0.2s ease;
+}
+
+.primary-output-option:hover {
+    border-color: #FF9800;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+}
+
+.primary-output-option input[type="radio"]:checked ~ .radio-label {
+    color: #FF9800;
+}
+
+.primary-output-option input[type="radio"]:checked ~ .radio-label strong {
+    color: #FF9800;
+}
+
+/* 输出特征复选框样式 */
+.output-feature-option {
+    padding: 10px;
+    margin: 5px 0;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #FFCDD2;
+    transition: all 0.2s ease;
+}
+
+.output-feature-option:hover {
+    border-color: #F44336;
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.1);
+}
+
+.output-feature-option .checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+}
+
+.output-feature-option .checkbox input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.output-feature-option .checkbox-label {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.output-feature-option .checkbox-label strong {
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.output-feature-option .checkbox-label code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* 输出特征选择器容器 */
+.output-features-selector {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #f8f9fa;
+    margin-bottom: 15px;
+}
+
+.primary-output-feature-selector {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
+    </style>
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 主要内容区 -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-cogs"></i> 设备模型配置</h1>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="add-model-btn">
+                    <i class="fas fa-plus"></i> 添加设备模型
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab导航 -->
+        <div class="tabs config-tabs">
+            <div class="tab-nav">
+                <button class="tab-link active" data-tab="device-models">
+                    <i class="fas fa-microchip"></i> 设备模型
+                </button>
+                <button class="tab-link" data-tab="model-versions">
+                    <i class="fas fa-code-branch"></i> 模型版本
+                </button>
+                <button class="tab-link" data-tab="features">
+                    <i class="fas fa-sliders-h"></i> 特征池
+                </button>
+            </div>
+
+            <!-- 设备模型Tab -->
+            <div class="tab-content active" id="tab-device-models">
+                <div class="tab-header">
+                    <h2><i class="fas fa-microchip"></i> 设备模型管理</h2>
+                    <div class="tab-actions">
+                        <div class="filter-group">
+                            <label for="model-type-filter">类型筛选:</label>
+                            <select id="model-type-filter" class="form-select">
+                                <option value="">全部类型</option>
+                                <option value="predefined">预定义模型</option>
+                                <option value="custom">自定义模型</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="model-status-filter">状态:</label>
+                            <select id="model-status-filter" class="form-select">
+                                <option value="">全部状态</option>
+                                <option value="active">启用</option>
+                                <option value="inactive">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table" id="device-models-table">
+                        <thead>
+                            <tr>
+                                <th>模型名称</th>
+                                <th>模型代码</th>
+                                <th>类型</th>
+                                <th>描述</th>
+                                <th>版本数</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="device-models-table-body">
+                            <tr>
+                                <td colspan="8" class="loading">正在加载设备模型数据...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 模型版本Tab -->
+            <div class="tab-content" id="tab-model-versions">
+                <div class="tab-header">
+                    <h2><i class="fas fa-code-branch"></i> 模型版本管理</h2>
+                    <div class="tab-actions">
+                        <div class="filter-group">
+                            <label for="version-model-filter">设备模型:</label>
+                            <select id="version-model-filter" class="form-select">
+                                <option value="">全部模型</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="version-status-filter">状态:</label>
+                            <select id="version-status-filter" class="form-select">
+                                <option value="">全部状态</option>
+                                <option value="active">启用</option>
+                                <option value="inactive">禁用</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="add-version-btn">
+                            <i class="fas fa-plus"></i> 添加版本
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table" id="model-versions-table">
+                        <thead>
+                            <tr>
+                                <th>版本号</th>
+                                <th>所属模型</th>
+                                <th>特征数量</th>
+                                <th>描述</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="model-versions-table-body">
+                            <tr>
+                                <td colspan="7" class="loading">正在加载模型版本数据...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 特征池Tab -->
+            <div class="tab-content" id="tab-features">
+                <div class="tab-header">
+                    <h2><i class="fas fa-sliders-h"></i> 特征池管理</h2>
+                    <div class="tab-actions">
+                        <div class="filter-group">
+                            <label for="feature-data-type-filter">数据类型:</label>
+                            <select id="feature-data-type-filter" class="form-select">
+                                <option value="">全部类型</option>
+                                <option value="string">字符串</option>
+                                <option value="number">数字</option>
+                                <option value="boolean">布尔值</option>
+                                <option value="array">数组</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="feature-required-filter">必需性:</label>
+                            <select id="feature-required-filter" class="form-select">
+                                <option value="">全部</option>
+                                <option value="true">必需</option>
+                                <option value="false">非必需</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="add-feature-btn">
+                            <i class="fas fa-plus"></i> 添加特征
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table" id="features-table">
+                        <thead>
+                            <tr>
+                                <th>特征名称</th>
+                                <th>特征代码</th>
+                                <th>数据类型</th>
+                                <th>单位</th>
+                                <th>默认值</th>
+                                <th>必需</th>
+                                <th>描述</th>
+                                <th>验证规则</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="features-table-body">
+                            <tr>
+                                <td colspan="10" class="loading">正在加载特征数据...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 设备模型编辑弹窗 -->
+    <div class="modal" id="device-model-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">设备模型</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="device-model-form">
+                    <div class="form-group">
+                        <label for="model-name" class="form-label required">模型名称</label>
+                        <input type="text" id="model-name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="model-code" class="form-label required">模型代码</label>
+                        <input type="text" id="model-code" class="form-control" required>
+                        <div class="form-hint">小写英文字母、数字和下划线组成</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="model-description" class="form-label">模型描述</label>
+                        <textarea id="model-description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="model-is-predefined" class="form-label">模型类型</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="model-is-predefined">
+                                <span>预定义模型</span>
+                                <div class="form-hint">系统预定义模型不可删除</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">状态</label>
+                        <div class="status-toggle">
+                            <label class="switch">
+                                <input type="checkbox" id="model-is-active" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span id="model-status-text">启用</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="model-cancel">取消</button>
+                <button class="btn btn-primary" id="model-save">保存模型</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改模型版本编辑弹窗 -->
+    <div class="modal" id="model-version-modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 class="modal-title">模型版本</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 修改：添加独立的内层tabs类名 -->
+                <div class="inner-tabs" id="version-tabs">
+                    <div class="inner-tab-nav">
+                        <button class="inner-tab-link active" data-inner-tab="version-basic">基础信息</button>
+                        <button class="inner-tab-link" data-inner-tab="version-features">特征配置</button>
+                    </div>
+
+                    <!-- 基础信息标签页 -->
+                    <div class="inner-tab-content active" id="inner-tab-version-basic">
+                        <form id="model-version-form" novalidate>
+                            <div class="form-group">
+                                <label for="version-model-id" class="form-label required">所属模型</label>
+                                <select id="version-model-id" class="form-select" required>
+                                    <option value="">请选择设备模型</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="version-number" class="form-label required">版本号</label>
+                                <input type="text" id="version-number" class="form-control" required placeholder="例如：v1.0.0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="version-description" class="form-label">版本描述</label>
+                                <textarea id="version-description" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">状态</label>
+                                <div class="status-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="version-is-active" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span id="version-status-text">启用</span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 特征配置标签页 -->
+                    <div class="inner-tab-content" id="inner-tab-version-features">
+                        <div class="feature-selection-container">
+                            <div class="feature-selector">
+                                <h4>可选特征池</h4>
+                                <div class="feature-search">
+                                    <input type="text" id="feature-search" class="form-control" placeholder="搜索特征...">
+                                </div>
+                                <div class="feature-list" id="available-features-list">
+                                    <div class="loading">正在加载特征池...</div>
+                                </div>
+                            </div>
+
+                            <div class="feature-selector">
+                                <h4>已选特征 <span id="selected-features-count">(0)</span></h4>
+                                <div class="feature-list" id="selected-features-list">
+                                    <div class="empty-state">暂无特征，从左侧添加</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 新增：输出特征选择 -->
+                        <!-- 输出特征设置部分 -->
+                        <div class="output-feature-section">
+                            <h4><i class="fas fa-bullseye"></i> 输出特征设置</h4>
+                            <p class="form-hint" style="margin-bottom: 15px;">
+                                可以设置多个输出特征，但只能设置一个主输出特征
+                            </p>
+
+                            <div class="form-group">
+                                <label class="form-label">输出特征（可多选）</label>
+                                <div id="output-features-selector">
+                                    <div class="empty-state">请先添加特征到已选列表</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">主输出特征</label>
+                                <div id="primary-output-feature-selector">
+                                    <div class="empty-state">请先设置输出特征</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 在输出特征设置后面添加状态特征设置 -->
+                        <div class="status-feature-section" style="margin-top: 20px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f8f9fa;">
+                            <h4><i class="fas fa-toggle-on"></i> 状态特征设置</h4>
+                            <p class="form-hint" style="margin-bottom: 15px;">
+                                开关机状态特征（可选），用于标记设备的运行状态，每个模型版本最多只能设置一个状态特征
+                            </p>
+
+                            <div class="form-group">
+                                <label class="form-label">选择状态特征</label>
+                                <div id="status-feature-selector">
+                                    <div class="empty-state">请先添加特征到已选列表</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="version-cancel">取消</button>
+                <button class="btn btn-primary" id="version-save">保存版本</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 特征编辑弹窗 -->
+    <div class="modal" id="feature-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">特征</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="feature-form">
+                    <div class="form-group">
+                        <label for="feature-name" class="form-label required">特征名称</label>
+                        <input type="text" id="feature-name" class="form-control" required>
+                    </div>
+
+                    <!-- 修改特征弹窗中的特征代码部分 -->
+                    <div class="form-group">
+                        <label for="feature-code" class="form-label required">特征代码</label>
+                        <input type="text" id="feature-code" class="form-control" required
+                               pattern="^[a-zA-Z0-9_]+$"
+                               title="只能使用小写英文字母、数字和下划线（_），不能使用中文或空格">
+                        <div class="form-hint">
+                            <div id="code-validation-hint" class="validation-hint">
+                                <i class="fas fa-info-circle"></i> 只能使用：小写英文字母a-z，数字 0-9，下划线 _
+                            </div>
+                            <div id="code-validation-error" class="validation-error" style="display: none;">
+                                <i class="fas fa-exclamation-circle"></i> <span id="code-error-text"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="feature-data-type" class="form-label required">数据类型</label>
+                            <select id="feature-data-type" class="form-select" required>
+                                <option value="">请选择数据类型</option>
+                                <option value="string">字符串</option>
+                                <option value="number">数字</option>
+                                <option value="boolean">布尔值</option>
+                                <option value="array">数组</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="feature-unit" class="form-label">单位</label>
+                            <input type="text" id="feature-unit" class="form-control" placeholder="例如：kW, ℃, %">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="feature-default-value" class="form-label">默认值</label>
+                        <input type="text" id="feature-default-value" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">必需特征</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="feature-is-required">
+                                <span>必需特征</span>
+                                <div class="form-hint">设备必须填写此特征值</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="feature-description" class="form-label">特征描述</label>
+                        <textarea id="feature-description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="feature-cancel">取消</button>
+                <button class="btn btn-primary" id="feature-save">保存特征</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/frontend/js/utils.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/components/navbar.js"></script>
+
+    <!-- 页面脚本 -->
+    <script src="/frontend/js/pages/features-api.js"></script>
+    <script src="/frontend/js/pages/features.js"></script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarContainer = document.getElementById('navbar-container');
+            if (navbarContainer && typeof Navbar !== 'undefined') {
+                Navbar.init(navbarContainer, 'features');
+            }
+
+            // 初始化页面
+            if (typeof FeaturesPage !== 'undefined') {
+                FeaturesPage.init();
+            }
+        });
+    </script>
+</body>
+</html>

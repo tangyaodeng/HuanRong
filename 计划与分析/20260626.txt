@@ -1,0 +1,69 @@
+2026-06-26 18:00 问题发现
+用户反馈：主机123一个模型、45一个模型，代码中有"主机关机就直接预测为0"的逻辑。
+查询数据库发现每个主机模型都有至少1台开机，按理应该正常预测，但在对应时间没有数据（device_status=off）。
+怀疑晚上开机时预测任务和训练任务过多导致出现bug，一直没有预测，只有关机时才好。
+
+2026-06-26 18:15 代码分析
+完整追踪了"关机→预测0"的调用链：
+  scheduler.py:execute_real_prediction() → predictor.make_prediction()
+  → prepare_prediction_data() → _check_device_status()
+  → 如果返回 False → 预测值直接写0，device_status=off存入数据库
+
+关机判定逻辑（predictor.py:1853-1905）：
+  1. 从Postgres查该设备模型版本中所有 is_status=True 的特征（DI点）
+  2. 对每个状态特征去MySQL查最新值
+  3. 只要有一个特征值≠0 → 判定开机（立即return True）
+  4. 所有有数据的特征值都=0，且至少一个有数据 → 判定关机（return False）
+  5. 任何异常或全无数据 → 默认开机（保守策略）
+
+导致误判的三种可能根因：
+  ① 状态特征映射不全（最可能）：复合设备的模型版本没有把全部主机的DI点标记为 is_status=True
+  ② MySQL查询静默失败：_get_database_connection() 连接缓存1小时，stale连接导致查询返回None被跳过
+  ③ 表名/列名映射错误：FeatureTableMapping 与MySQL实际结构不一致，SQL不报错但返回空结果
+
+任务过多不是根因：TaskQueueManager 有 max_train_tasks=1, max_predict_tasks=1 限流，任务排队不会导致状态误判。
+
+2026-06-26 18:30 实施修改（4项已完成）
+  ① 增强 _check_device_status 诊断日志（predictor.py）
+     - 所有日志从 INFO 升级为 WARNING，确保生产环境可见
+     - 新增 status_values_summary 字典跟踪每个状态特征的查询结果
+     - 连接失败/查询失败/无数据均记录到汇总
+     - 最终决策时打印完整汇总："[状态检查] ⚠️ 设备X所有状态特征均为0，判定为关机！汇总: {...}"
+
+  ② 添加预测 JSONL 日志（predictor.py）
+     - 新增 _write_prediction_log 静态方法和 _log_prediction_result 方法
+     - make_prediction 的所有返回分支（无数据/关机多步/关机单步/多步成功/单步成功/异常）均写入
+     - 输出到 backend/logs/predictions_{日期}.jsonl
+
+  ③ 添加训练 JSONL 日志（ml_start.py）
+     - 新增 _write_training_log 方法
+     - real_train_device_model 成功/失败分支均写入
+     - 输出到 backend/logs/training_{日期}.jsonl
+
+  ④ 创建独立调度器启动脚本 run_scheduler.py
+     - 只启动 TrainingScheduler，不启动FastAPI
+     - 支持 --log-level 参数，同时输出到控制台和 backend/logs/scheduler_{日期}.log
+     - 注册 SIGINT/SIGTERM 优雅关闭
+
+2026-06-26 18:45 新发现：FastAPI中残留调度器引用
+main.py 第94-103行 shutdown 事件中仍保留 scheduler.stop() 调用：
+  - 虽然 startup 中 scheduler.start() 已注释掉，但 shutdown 中 get_scheduler() 仍会创建单例
+  - model_training.py 第14行模块级 from ..services.scheduler import get_scheduler 也会触发导入
+  - 这些导入本身安全（不调用 start()），但可能让人困惑"调度器到底在哪运行"
+  - 需将 shutdown 中的 scheduler.stop() 也注释掉，并加注释说明调度器已由 run_scheduler.py 独立管理
+
+2026-06-26 18:50 待实施
+  ① 清理 main.py 第94-103行：注释 scheduler.stop()，加说明
+  ② 确认 model_training.py 导入安全，必要时加保护
+  ③ 更新 控制台命令.txt：终端1标注"调度器不在本终端"，终端7补充说明
+
+2026-06-26 19:05 实施完成（待实施3项）
+  ① main.py 已清理：
+     - startup 注释更新为"调度器已由 run_scheduler.py 独立管理，不在 FastAPI 中启动"
+     - shutdown 中原有的 scheduler.stop() 已注释掉，同样加说明
+  ② model_training.py 导入已加保护：
+     - 第14-15行的模块级导入改为 try/except 包裹，ImportError 时设为 None
+     - API 端点内的函数级导入不受影响
+  ③ 控制台命令.txt 已更新：
+     - 终端1标注"（FastAPI - 不含调度器，调度器已移至终端7）"
+     - 终端7补充说明：排查命令 grep "[状态检查]" backend/logs/scheduler_*.log

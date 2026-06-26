@@ -1,0 +1,30 @@
+# 使用指定版本的 Python 镜像（3.11.9）
+FROM python:3.11.9-slim
+
+# 设置工作目录为 /app
+WORKDIR /app
+
+# 复制依赖文件并安装（假设 requirements.txt 在项目根目录）
+COPY requirements.txt .
+RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+# 安装系统依赖（用于编译 mysqlclient 和 psycopg2 等）
+RUN apt-get update && apt-get install -y \
+    gcc \
+    pkg-config \
+    default-libmysqlclient-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+
+# 复制整个项目到工作目录（包括 backend 文件夹）
+COPY . .
+
+# 设置工作目录为 backend（因为 start.py 和 app/ 都在这里）
+WORKDIR /app/backend
+
+# 暴露端口
+EXPOSE 8000
+
+# 使用 start.py 启动（推荐，保持开发与生产一致，但生产环境需关闭 reload）
+CMD ["python", "start.py"]

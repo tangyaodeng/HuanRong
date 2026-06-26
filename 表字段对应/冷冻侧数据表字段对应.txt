@@ -1,0 +1,59 @@
+数据库
+1. 查询模式图表：设备总功率优化趋势
+图表说明：折线图展示“当前设备总功率”与“优化总功率”随时间变化趋势。
+数据来源表：chilled_opt_parameters_total
+图表系列	对应表字段	字段类型	说明
+当前设备总功率	current_total_power	DECIMAL(8,2)	优化前的实际总功率（kW）
+优化总功率	optimized_total_power	DECIMAL(8,2)	优化建议的总功率（kW）
+X轴（时间）	updated_at 或 optimization_timestamp	TIMESTAMP	记录更新时间或优化时间戳
+
+2. 寻优模式图表：迭代寻优过程
+图表说明：展示最近一次优化迭代中所有温度组合下的总功率、主机功率、冷冻泵功率分布，支持动画播放。
+数据来源：Redis 缓存（非数据库表）
+Redis Key	数据结构	字段说明
+HuanRong:chilled_opt:latest_iteration	JSON	包含 timestamp（迭代时间）和 combinations（组合列表）
+combinations 数组中每个元素的字段：
+字段名	类型	说明
+index	int	组合序号
+total_power	float	总功率（kW）
+host_power	float	主机总功率（kW）
+pump_power	float	冷冻泵总功率（kW）
+actual_inlet_temp	float	供水温度（℃）
+actual_return_temp	float	回水温度（℃）
+delta_temp	float	供回水温差（℃）
+power_diff	float	节能功率（kW，正为节能）
+power_diff_percent	float	节能百分比（%）
+
+3. 右侧“参数优化”对比区域
+数据来源表：chilled_opt_parameters_total（最新一条记录）
+3.1 温度参数
+显示名称	当前值字段	优化值字段	差值字段	单位
+冷冻水供水温度	current_supply_temp	optimized_supply_temp	diff_supply_temp	℃
+冷冻水回水温度	current_return_temp	optimized_return_temp	diff_return_temp	℃
+冷冻水温差	current_temp_diff	optimized_temp_diff	diff_temp_diff	℃
+3.2 节能控制（功率参数）
+显示名称	当前值字段	优化值字段	差值字段	百分比字段	单位
+设备总功率	current_total_power	optimized_total_power	diff_total_power	percent_total_power	kW
+主机总功率	current_host_total_power	optimized_host_total_power	diff_host_total_power	percent_host_total_power	kW
+冷冻泵总功率	current_chilled_pump_total_power	optimized_chilled_pump_total_power	diff_chilled_pump_total_power	percent_chilled_pump_total_power	kW
+3.3 节能汇总
+显示名称	对应表字段	说明
+预计总节能	total_energy_saving	节能功率（kW）
+节能比例	energy_saving_percent	节能百分比（%）
+更新时间	updated_at	最后更新时间
+3.4 下发状态（优化状态弹窗）
+字段	说明
+optimized_supply_temp_applied	优化供水温度是否可下发（BOOLEAN）
+optimized_temp_diff_applied	优化温差是否可下发（BOOLEAN）
+failure_reasons	下发失败原因（TEXT，多条用分号分隔）
+
+4. 历史数据查询弹窗
+数据来源表：chilled_opt_parameters_total
+查询字段标识	当前值字段	优化值字段	单位
+total_power	current_total_power	optimized_total_power	kW
+host_total_power	current_host_total_power	optimized_host_total_power	kW
+chilled_pump_total_power	current_chilled_pump_total_power	optimized_chilled_pump_total_power	kW
+supply_temp	current_supply_temp	optimized_supply_temp	℃
+return_temp	current_return_temp	optimized_return_temp	℃
+temp_diff	current_temp_diff	optimized_temp_diff	℃
+返回结构：{ timestamp, current_value, optimized_value }，timestamp 为 optimization_timestamp

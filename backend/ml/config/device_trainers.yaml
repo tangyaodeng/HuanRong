@@ -1,0 +1,27 @@
+#backend/ml/config/device_trainers.yaml
+device_trainer_config:
+  # 设备ID到训练器的映射配置
+  device7:
+    primary_trainer: "ml.models.trainers.device7_xgboost_v1.XGBoostTrainer"
+    trainer_list:
+      - "ml.models.trainers.device7_xgboost_v1.XGBoostTrainer"
+      - "ml.models.trainers.device7_xgboost_v2.XGBoostTrainer"
+    description: "设备7的模型训练器配置"
+
+  device11:
+    primary_trainer: "ml.models.trainers.device11_xgboost_v1.XGBoostTrainer"
+    trainer_list:
+      - "ml.models.trainers.device11_xgboost_v1.XGBoostTrainer"
+    description: "设备11的模型训练器配置"
+
+  device15:
+    primary_trainer: "ml.models.trainers.device11_xgboost_v1.XGBoostTrainer"
+    trainer_list:
+      - "ml.models.trainers.device11_xgboost_v1.XGBoostTrainer"
+    description: "设备15的模型训练器配置"
+  # 默认配置（用于未配置的设备）
+  default:
+    primary_trainer: "ml.models.trainers.device11_xgboost_v1.XGBoostTrainer"
+    trainer_list:
+      - "ml.models.trainers.device11_xgboost_v1.XGBoostTrainer"
+    description: "默认训练器配置"
